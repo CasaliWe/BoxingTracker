@@ -15,6 +15,7 @@ export const users = pgTable("users", {
   altura: text("altura"),
   tempoTreino: text("tempo_treino"),
   academia: text("academia"),
+  instagram: text("instagram"),
   criadoEm: timestamp("criado_em").defaultNow().notNull(),
   atualizadoEm: timestamp("atualizado_em").defaultNow().notNull(),
 });
@@ -54,6 +55,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   altura: true,
   tempoTreino: true,
   academia: true,
+  instagram: true,
 });
 
 export const insertComboSchema = createInsertSchema(combos).omit({

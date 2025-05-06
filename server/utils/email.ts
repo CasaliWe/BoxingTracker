@@ -89,7 +89,7 @@ const passwordResetTemplate = (password: string) => `
       <p>Por razões de segurança, recomendamos que você altere esta senha após o login.</p>
       <p>Para alterar sua senha, acesse seu perfil no VibeBoxing e clique em "Alterar minha senha".</p>
       <p style="text-align: center;">
-        <a href="http://localhost:5000/login" class="button">Acessar VibeBoxing</a>
+        <a href="${process.env.APP_URL || window.location.origin}/login" class="button">Acessar VibeBoxing</a>
       </p>
     </div>
     <div class="footer">

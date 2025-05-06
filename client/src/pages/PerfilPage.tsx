@@ -42,10 +42,7 @@ const PerfilPage = () => {
   };
   
   const handleChangePassword = () => {
-    toast({
-      title: "Alteração de senha",
-      description: "Um link para alteração de senha foi enviado para seu email."
-    });
+    setSenhaModalOpen(true);
   };
   
   const handleDeleteAccount = () => {
@@ -77,6 +74,12 @@ const PerfilPage = () => {
   
   return (
     <div className="flex h-screen bg-background text-white">
+      {/* Modal de alteração de senha */}
+      <AlterarSenhaModal 
+        isOpen={senhaModalOpen} 
+        onClose={() => setSenhaModalOpen(false)} 
+      />
+      
       {/* Sidebar para desktop */}
       <div className="hidden md:block">
         <Sidebar />

@@ -31,15 +31,26 @@ export function setupAuth(app: Express) {
         checkPeriod: 86400000 // limpar sessões expiradas a cada 24h
       }),
       secret: process.env.SESSION_SECRET || 'vibeboxing-secret-key',
-      resave: false,
-      saveUninitialized: false,
+      resave: true, // Salva a sessão mesmo se não modificada
+      saveUninitialized: false, // Não cria sessão até que algo seja armazenado
       cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 1 semana
+        maxAge: 1000 * 60 * 60 * 24 * 30, // 30 dias
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false, // Definir como false durante o desenvolvimento
+        sameSite: 'lax', // Importante para SPA
+        path: '/', // Garante que o cookie esteja disponível em todo o site
       },
     })
   );
+  
+  // Log para debug de sessão (comentado para não poluir o console)
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    if (req.path === '/api/login' || req.path === '/api/user') {
+      console.log('Session ID:', req.sessionID);
+      console.log('Session data:', req.session);
+    }
+    next();
+  });
 
   // Middleware para verificar autenticação
   app.use(async (req: Request, res: Response, next: NextFunction) => {
@@ -119,6 +130,20 @@ export function setupAuth(app: Express) {
 
       // Autenticar o usuário após o registro
       req.session.userId = user.id;
+      
+      // Salvar sessão explicitamente
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error('Erro ao salvar sessão durante registro:', err);
+            reject(err);
+          } else {
+            console.log('Sessão salva com sucesso durante registro. Session ID:', req.sessionID);
+            resolve();
+          }
+        });
+      });
+      
       res.status(201).json(user);
     } catch (error) {
       console.error('Erro ao registrar usuário:', error);
@@ -146,6 +171,19 @@ export function setupAuth(app: Express) {
 
       // Autenticar o usuário
       req.session.userId = user.id;
+      
+      // Salvar sessão e garantir que os cookies sejam definidos
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error('Erro ao salvar sessão:', err);
+            reject(err);
+          } else {
+            console.log('Sessão salva com sucesso. Session ID:', req.sessionID);
+            resolve();
+          }
+        });
+      });
 
       // Retornar dados do usuário (exceto a senha)
       const userData = {

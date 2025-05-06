@@ -35,10 +35,7 @@ const LoginPage = () => {
         });
         
         // Usar setTimeout para garantir que o redirecionamento ocorra após o estado ser atualizado
-        setTimeout(() => {
-          console.log('Redirecionando para dashboard...');
-          setLocation('/');
-        }, 500);
+        setLocation('/');
       } else {
         toast({
           title: "Falha no login",

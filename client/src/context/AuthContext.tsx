@@ -226,7 +226,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const loadUserFromStorage = () => {
       // Primeiro, tentar obter o usuário do localStorage
       const savedUser = getUser();
-      if (savedUser && savedUser.token) {
+      const token = getToken();
+      
+      if (savedUser && token) {
         console.log('Usuário encontrado no localStorage:', savedUser);
         setUser(savedUser);
         return true;
@@ -247,6 +249,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (token) {
           headers['Authorization'] = `Bearer ${token}`;
+        } else {
+          // Se não houver token, não faz sentido verificar no servidor
+          console.log('Nenhum token encontrado para autenticação');
+          return false;
         }
         
         const res = await fetch('/api/user', {
@@ -262,13 +268,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Salvar no localStorage para persistência
           if (userData.token) {
             saveToken(userData.token);
+          } else if (token) {
+            // Se o servidor não retornou um token, mas temos um local, usamos o local
+            userData.token = token;
           }
-          saveUser(userData);
           
+          saveUser(userData);
           setUser(userData);
           return true;
         } else {
-          console.log('Usuário não autenticado no servidor');
+          console.log('Usuário não autenticado no servidor ou token expirado');
+          // Se o servidor rejeitou a autenticação, limpar dados locais
+          clearAuth();
+          setUser(null);
           return false;
         }
       } catch (error) {
@@ -279,13 +291,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Primeiro tentar do localStorage, se não funcionar, tentar do servidor
     const userLoaded = loadUserFromStorage();
-    if (!userLoaded) {
-      checkServerAuth().catch(err => {
-        console.error("Erro ao verificar autenticação:", err);
-        setUser(null);
-        clearAuth();
-      });
-    }
+    
+    // Mesmo se carregou do localStorage, ainda verificar no servidor para validar o token
+    checkServerAuth().catch(err => {
+      console.error("Erro ao verificar autenticação:", err);
+      setUser(null);
+      clearAuth();
+    });
   }, []);
 
   return (

@@ -188,8 +188,8 @@ const RegistroPage = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Já tem uma conta?{' '}
-              <Link href="/login">
-                <a className="text-base-base hover:underline">Faça login</a>
+              <Link href="/login" className="text-base-base hover:underline">
+                Faça login
               </Link>
             </p>
           </div>

@@ -12,9 +12,11 @@ declare global {
   }
 }
 
-// Definir interface para a sessão com userId
-interface CustomSession extends session.Session {
-  userId?: number;
+// Extender SessionData para incluir userId
+declare module 'express-session' {
+  interface SessionData {
+    userId?: number;
+  }
 }
 
 export function setupAuth(app: Express) {

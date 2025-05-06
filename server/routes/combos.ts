@@ -72,7 +72,7 @@ export function setupCombosRoutes(app: Express) {
       const combo = await prisma.combo.create({
         data: {
           userId: req.user.id,
-          nome,
+          name: nome,
           base,
           guarda,
           etapas: JSON.stringify(etapas),
@@ -116,7 +116,7 @@ export function setupCombosRoutes(app: Express) {
       const combo = await prisma.combo.update({
         where: { id: comboId },
         data: {
-          nome: nome || undefined,
+          name: nome || undefined,
           base: base || undefined,
           guarda: guarda || undefined,
           etapas: etapas ? JSON.stringify(etapas) : undefined,

@@ -1,65 +1,70 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import useLocalStorage from '@/hooks/useLocalStorage';
+import { apiRequest } from '@/lib/queryClient';
+import { QueryClient } from '@tanstack/react-query';
 
 interface User {
-  id: string;
+  id: number;
   name: string;
   email: string;
+  phone?: string;
+  age?: number;
+  city?: string;
+  state?: string;
+  weight?: number;
+  height?: number;
+  gym?: string;
+  profileImage?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  loginWithGoogle: () => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
+  updateProfile: (userData: Partial<User>) => Promise<boolean>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  deleteAccount: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useLocalStorage<User | null>('vibeboxing-user', null);
+  const [user, setUser] = useState<User | null>(null);
   
   const isAuthenticated = !!user;
+
+  // Verifica se o usuário está autenticado ao iniciar a aplicação
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('/api/user', {
+          credentials: 'include'
+        });
+        
+        if (res.ok) {
+          const userData = await res.json();
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+      }
+    };
+    
+    checkAuth();
+  }, []);
 
   // Função de login com email/senha
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // Simulação de login (em produção, conectaria a um backend real)
-      if (email && password) {
-        // Simular um delay de rede
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        setUser({
-          id: '1',
-          name: email.split('@')[0],
-          email
-        });
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Erro ao fazer login:', error);
-      return false;
-    }
-  };
-
-  // Função de login com Google
-  const loginWithGoogle = async (): Promise<boolean> => {
-    try {
-      // Simulação de login com Google
-      // Em produção, conectaria com Firebase ou outro provedor
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setUser({
-        id: '2',
-        name: 'Usuário Google',
-        email: 'usuario@gmail.com'
-      });
+      const res = await apiRequest('POST', '/api/login', { email, password });
+      const userData = await res.json();
+      setUser(userData);
       return true;
     } catch (error) {
-      console.error('Erro ao fazer login com Google:', error);
+      console.error('Erro ao fazer login:', error);
       return false;
     }
   };
@@ -67,19 +72,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Função de registro
   const register = async (name: string, email: string, password: string): Promise<boolean> => {
     try {
-      // Simulação de registro
-      if (name && email && password) {
-        // Simular um delay de rede
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        setUser({
-          id: '3',
-          name,
-          email
-        });
-        return true;
-      }
-      return false;
+      const res = await apiRequest('POST', '/api/register', { name, email, password });
+      const userData = await res.json();
+      setUser(userData);
+      return true;
     } catch (error) {
       console.error('Erro ao registrar:', error);
       return false;
@@ -87,12 +83,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Função de logout
-  const logout = () => {
-    setUser(null);
+  const logout = async () => {
+    try {
+      await apiRequest('POST', '/api/logout');
+      setUser(null);
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
+  };
+  
+  // Função para atualizar perfil
+  const updateProfile = async (userData: Partial<User>): Promise<boolean> => {
+    try {
+      const res = await apiRequest('PUT', '/api/user', userData);
+      const updatedUser = await res.json();
+      setUser(updatedUser);
+      return true;
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
+      return false;
+    }
+  };
+  
+  // Função para alterar senha
+  const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    try {
+      await apiRequest('POST', '/api/change-password', { currentPassword, newPassword });
+      return true;
+    } catch (error) {
+      console.error('Erro ao alterar senha:', error);
+      return false;
+    }
+  };
+  
+  // Função para excluir conta
+  const deleteAccount = async (): Promise<boolean> => {
+    try {
+      await apiRequest('DELETE', '/api/user');
+      setUser(null);
+      return true;
+    } catch (error) {
+      console.error('Erro ao excluir conta:', error);
+      return false;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, loginWithGoogle, register, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated, 
+      login, 
+      register, 
+      logout,
+      updateProfile,
+      changePassword,
+      deleteAccount 
+    }}>
       {children}
     </AuthContext.Provider>
   );

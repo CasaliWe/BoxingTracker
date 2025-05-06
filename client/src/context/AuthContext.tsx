@@ -229,13 +229,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         console.log('Verificando autenticação no servidor...');
         
+        // Adicionar o token do localStorage nos headers, se existir
+        const token = getToken();
+        const headers: Record<string, string> = {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        };
+        
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         const res = await fetch('/api/user', {
           method: 'GET',
           credentials: 'include',
-          headers: {
-            'Accept': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate'
-          }
+          headers
         });
         
         if (res.ok) {

@@ -64,7 +64,7 @@ export function setupAuth(app: Express) {
   // Middleware para verificar autenticação (usando token JWT ou sessão como fallback)
   app.use(async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Primeiro tenta verificar pelo token JWT no cabeçalho Authorization
+      // Primeiro tenta verificar pelo token JWT no cabeçalho Authorization (enviado pelo cliente)
       const authHeader = req.headers.authorization;
       
       if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -92,7 +92,12 @@ export function setupAuth(app: Express) {
           });
           
           if (user) {
-            req.user = user;
+            // Adicionar token ao usuário para que o cliente possa armazenar
+            const userData = {
+              ...user,
+              token
+            };
+            req.user = userData;
             return next();
           }
         }
@@ -120,7 +125,15 @@ export function setupAuth(app: Express) {
         });
         
         if (user) {
-          req.user = user;
+          // Gerar um novo token para o usuário a partir da sessão
+          const token = generateToken(user.id);
+          
+          // Adicionar token ao usuário para que o cliente possa armazenar
+          const userData = {
+            ...user,
+            token
+          };
+          req.user = userData;
         }
       }
     } catch (error) {

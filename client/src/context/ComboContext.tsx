@@ -12,19 +12,19 @@ const combosPadroes: Combo[] = [
     etapas: [
       {
         golpes: [
-          { nome: 'Jab up', categoria: 'ATAQUE', variacao: 'up' },
-          { nome: 'Jab down', categoria: 'ATAQUE', variacao: 'down' }
+          { nome: 'Jab D ↑', categoria: 'ATAQUE', variacao: 'up' },
+          { nome: 'Jab D ↓', categoria: 'ATAQUE', variacao: 'down' }
         ]
       },
       {
         golpes: [
-          { nome: 'Slip L', categoria: 'ESQUIVA', variacao: 'L' },
-          { nome: 'Slip R', categoria: 'ESQUIVA', variacao: 'R' }
+          { nome: 'Slip E', categoria: 'ESQUIVA', variacao: 'E' },
+          { nome: 'Slip D', categoria: 'ESQUIVA', variacao: 'D' }
         ]
       },
       {
         golpes: [
-          { nome: 'Cruzado up', categoria: 'ATAQUE', variacao: 'up' }
+          { nome: 'Cruzado D ↑', categoria: 'ATAQUE', variacao: 'up' }
         ]
       }
     ],
@@ -38,8 +38,8 @@ const combosPadroes: Combo[] = [
     etapas: [
       {
         golpes: [
-          { nome: 'Block head R', categoria: 'BLOQUEIO', variacao: 'R' },
-          { nome: 'Block head L', categoria: 'BLOQUEIO', variacao: 'L' }
+          { nome: 'Bloqueio alto D', categoria: 'BLOQUEIO', variacao: 'D' },
+          { nome: 'Bloqueio alto E', categoria: 'BLOQUEIO', variacao: 'E' }
         ]
       },
       {
@@ -49,8 +49,8 @@ const combosPadroes: Combo[] = [
       },
       {
         golpes: [
-          { nome: 'Direto up', categoria: 'ATAQUE', variacao: 'up' },
-          { nome: 'Upper up', categoria: 'ATAQUE', variacao: 'up' }
+          { nome: 'Direto E ↑', categoria: 'ATAQUE', variacao: 'up' },
+          { nome: 'Upper E ↑', categoria: 'ATAQUE', variacao: 'up' }
         ]
       }
     ],

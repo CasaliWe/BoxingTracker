@@ -1,27 +1,15 @@
 import React, { useState } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import MobileHeader from '@/components/layout/MobileHeader';
-import ComboCard from '@/components/dashboard/ComboCard';
-import EmptyCard from '@/components/dashboard/EmptyCard';
 import StatCard from '@/components/dashboard/StatCard';
-import ComboCreationModal from '@/components/combo/ComboCreationModal';
 import { useComboContext } from '@/context/ComboContext';
 
 const DashboardPage = () => {
   const [showSidebar, setShowSidebar] = useState(false);
-  const [showComboModal, setShowComboModal] = useState(false);
   const { combos } = useComboContext();
 
   const toggleSidebar = () => {
     setShowSidebar(!showSidebar);
-  };
-
-  const openComboModal = () => {
-    setShowComboModal(true);
-  };
-
-  const closeComboModal = () => {
-    setShowComboModal(false);
   };
 
   return (
@@ -42,48 +30,32 @@ const DashboardPage = () => {
         <MobileHeader onMenuClick={toggleSidebar} />
         
         <div className="p-4 md:p-6 max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Dashboard</h2>
-              <p className="text-muted-foreground mt-1">Crie e gerencie seus combos de boxe</p>
-            </div>
-            <button 
-              onClick={openComboModal}
-              className="mt-4 md:mt-0 flex items-center justify-center px-4 py-2 bg-base-dark hover:bg-base-base text-white rounded-lg transition-colors duration-200"
-            >
-              <i className="ri-add-line mr-2"></i>
-              <span>Adicionar novo combo</span>
-            </button>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-white">Dashboard</h2>
+            <p className="text-muted-foreground mt-1">Resumo das suas atividades de treino</p>
           </div>
 
-          {/* Cards de Combo */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {combos.map((combo) => (
-              <ComboCard key={combo.id} combo={combo} />
-            ))}
-            
-            {/* Card vazio para adicionar novo combo */}
-            <EmptyCard onCreateClick={openComboModal} />
+          {/* Banner "Em breve" */}
+          <div className="bg-card p-10 rounded-xl border border-dark-600 mb-8 flex flex-col items-center justify-center text-center">
+            <div className="w-20 h-20 rounded-full bg-base-dark/20 flex items-center justify-center mb-4">
+              <i className="ri-rocket-line text-3xl text-base-base"></i>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Novas funcionalidades em breve!</h3>
+            <p className="text-muted-foreground max-w-md">
+              Estamos trabalhando em novos recursos para o Dashboard. Em breve você poderá acompanhar seu progresso, visualizar estatísticas detalhadas e muito mais.
+            </p>
           </div>
 
           {/* Estatísticas Rápidas */}
           <div className="mt-6">
             <h3 className="text-xl font-semibold mb-4 text-white">Estatísticas Rápidas</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <StatCard 
                 icon="ri-boxing-line" 
                 iconClass="text-base-base" 
                 bgClass="bg-base-dark/20" 
                 title="Total de Combos" 
                 value={combos.length.toString()} 
-              />
-              
-              <StatCard 
-                icon="ri-timer-line" 
-                iconClass="text-ataques-base" 
-                bgClass="bg-ataques-dark/20" 
-                title="Tempo de treino" 
-                value="3h 45m" 
               />
               
               <StatCard 
@@ -100,9 +72,6 @@ const DashboardPage = () => {
           </div>
         </div>
       </main>
-
-      {/* Modal de criação de combos */}
-      {showComboModal && <ComboCreationModal onClose={closeComboModal} />}
     </div>
   );
 };

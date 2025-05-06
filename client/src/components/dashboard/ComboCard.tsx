@@ -28,12 +28,7 @@ const ComboCard: React.FC<ComboCardProps> = ({ combo }) => {
     }
   };
 
-  const handlePlayCombo = () => {
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "O modo de prática estará disponível em breve."
-    });
-  };
+
 
   // Formatar a data
   const dataFormatada = new Date(combo.dataModificacao).toLocaleDateString('pt-BR');
@@ -73,15 +68,8 @@ const ComboCard: React.FC<ComboCardProps> = ({ combo }) => {
         </div>
       </div>
       
-      <div className="px-4 py-3 bg-muted border-t border-dark-600 flex justify-between items-center">
+      <div className="px-4 py-3 bg-muted border-t border-dark-600">
         <span className="text-sm text-muted-foreground">Modificado: {dataFormatada}</span>
-        <button 
-          onClick={handlePlayCombo}
-          className="flex items-center text-white bg-base-base hover:bg-base-dark px-3 py-1 rounded-md text-sm transition-colors duration-200"
-        >
-          <i className="ri-play-fill mr-1"></i>
-          <span>Praticar</span>
-        </button>
       </div>
     </div>
   );

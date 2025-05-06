@@ -1,69 +1,16 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Combo } from '@/lib/constants';
-import useLocalStorage from '@/hooks/useLocalStorage';
-
-// Exemplos de combos
-const combosPadroes: Combo[] = [
-  {
-    id: '1',
-    nome: 'Combo Básico Destro',
-    base: 'destro',
-    guarda: 'Guarda Tradicional',
-    etapas: [
-      {
-        golpes: [
-          { nome: 'Jab D ↑', categoria: 'ATAQUE', variacao: 'up' },
-          { nome: 'Jab D ↓', categoria: 'ATAQUE', variacao: 'down' }
-        ]
-      },
-      {
-        golpes: [
-          { nome: 'Slip E', categoria: 'ESQUIVA', variacao: 'E' },
-          { nome: 'Slip D', categoria: 'ESQUIVA', variacao: 'D' }
-        ]
-      },
-      {
-        golpes: [
-          { nome: 'Cruzado D ↑', categoria: 'ATAQUE', variacao: 'up' }
-        ]
-      }
-    ],
-    dataModificacao: '2023-05-02T10:00:00Z'
-  },
-  {
-    id: '2',
-    nome: 'Combo Defensivo',
-    base: 'canhoto',
-    guarda: 'Philly Shell',
-    etapas: [
-      {
-        golpes: [
-          { nome: 'Bloqueio alto D', categoria: 'BLOQUEIO', variacao: 'D' },
-          { nome: 'Bloqueio alto E', categoria: 'BLOQUEIO', variacao: 'E' }
-        ]
-      },
-      {
-        golpes: [
-          { nome: 'Passo atrás', categoria: 'FOOTWORK' }
-        ]
-      },
-      {
-        golpes: [
-          { nome: 'Direto E ↑', categoria: 'ATAQUE', variacao: 'up' },
-          { nome: 'Upper E ↑', categoria: 'ATAQUE', variacao: 'up' }
-        ]
-      }
-    ],
-    dataModificacao: '2023-04-28T14:30:00Z'
-  }
-];
+import { useAuth } from './AuthContext';
 
 // Tipo do contexto
 interface ComboContextType {
   combos: Combo[];
-  adicionarCombo: (combo: Combo) => void;
-  deleteCombo: (id: string) => void;
-  editarCombo: (id: string, novoCombo: Combo) => void;
+  isLoading: boolean;
+  error: string | null;
+  adicionarCombo: (combo: Omit<Combo, 'id'>) => Promise<boolean>;
+  deleteCombo: (id: string) => Promise<boolean>;
+  editarCombo: (id: string, novoCombo: Omit<Combo, 'id'>) => Promise<boolean>;
+  fetchCombos: () => Promise<void>;
 }
 
 // Criação do contexto
@@ -71,22 +18,146 @@ const ComboContext = createContext<ComboContextType | undefined>(undefined);
 
 // Provider Component
 export const ComboProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [combos, setCombos] = useLocalStorage<Combo[]>('vibeboxing-combos', combosPadroes);
+  const [combos, setCombos] = useState<Combo[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
 
-  const adicionarCombo = (combo: Combo) => {
-    setCombos([...combos, combo]);
+  // Função para buscar combos da API
+  const fetchCombos = async () => {
+    if (!isAuthenticated) {
+      setCombos([]);
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('/api/combos', {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Falha ao buscar combos');
+      }
+      
+      const data = await response.json();
+      setCombos(data);
+    } catch (err) {
+      console.error('Erro ao buscar combos:', err);
+      setError('Não foi possível carregar seus combos. Tente novamente mais tarde.');
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  const deleteCombo = (id: string) => {
-    setCombos(combos.filter(combo => combo.id !== id));
+  
+  // Buscar combos inicialmente e quando autenticação mudar
+  useEffect(() => {
+    fetchCombos();
+  }, [isAuthenticated]);
+  
+  // Função para adicionar um combo
+  const adicionarCombo = async (novoCombo: Omit<Combo, 'id'>): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('/api/combos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(novoCombo)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Falha ao criar combo');
+      }
+      
+      const comboSalvo = await response.json();
+      setCombos(combos => [...combos, comboSalvo]);
+      return true;
+    } catch (err) {
+      console.error('Erro ao adicionar combo:', err);
+      setError('Não foi possível salvar o combo. Tente novamente mais tarde.');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  const editarCombo = (id: string, novoCombo: Combo) => {
-    setCombos(combos.map(combo => combo.id === id ? novoCombo : combo));
+  
+  // Função para deletar um combo
+  const deleteCombo = async (id: string): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(`/api/combos/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Falha ao excluir combo');
+      }
+      
+      setCombos(combos => combos.filter(combo => combo.id !== id));
+      return true;
+    } catch (err) {
+      console.error('Erro ao excluir combo:', err);
+      setError('Não foi possível excluir o combo. Tente novamente mais tarde.');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Função para editar um combo
+  const editarCombo = async (id: string, dadosAtualizados: Omit<Combo, 'id'>): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(`/api/combos/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(dadosAtualizados)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Falha ao atualizar combo');
+      }
+      
+      const comboAtualizado = await response.json();
+      setCombos(combos => combos.map(combo => combo.id === id ? comboAtualizado : combo));
+      return true;
+    } catch (err) {
+      console.error('Erro ao editar combo:', err);
+      setError('Não foi possível atualizar o combo. Tente novamente mais tarde.');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <ComboContext.Provider value={{ combos, adicionarCombo, deleteCombo, editarCombo }}>
+    <ComboContext.Provider value={{ 
+      combos, 
+      isLoading, 
+      error, 
+      adicionarCombo, 
+      deleteCombo, 
+      editarCombo,
+      fetchCombos 
+    }}>
       {children}
     </ComboContext.Provider>
   );

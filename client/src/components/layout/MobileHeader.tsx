@@ -54,8 +54,16 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuClick }) => {
           onClick={toggleDropdown} 
           className="flex items-center text-white"
         >
-          <div className="w-8 h-8 rounded-full bg-base-dark/50 flex items-center justify-center">
-            <i className="ri-user-line"></i>
+          <div className="w-8 h-8 rounded-full bg-base-dark/50 flex items-center justify-center overflow-hidden">
+            {user?.profileImageUrl ? (
+              <img 
+                src={user.profileImageUrl} 
+                alt="Foto de perfil" 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <i className="ri-user-line"></i>
+            )}
           </div>
         </button>
         

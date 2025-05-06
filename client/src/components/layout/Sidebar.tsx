@@ -31,9 +31,9 @@ const Sidebar: React.FC<SidebarProps> = ({ className, onClose }) => {
       
       {/* Informações do usuário */}
       <div className="p-4 border-b border-dark-600 flex items-center space-x-3">
-        <div className="w-10 h-10 rounded-full bg-base-dark/50 flex items-center justify-center flex-shrink-0">
-          {user?.profileImage ? (
-            <img src={user.profileImage} alt="Perfil" className="w-full h-full object-cover rounded-full" />
+        <div className="w-10 h-10 rounded-full bg-base-dark/50 flex items-center justify-center flex-shrink-0 overflow-hidden">
+          {user?.profileImageUrl ? (
+            <img src={user.profileImageUrl} alt="Perfil" className="w-full h-full object-cover rounded-full" />
           ) : (
             <i className="ri-user-line text-lg text-white"></i>
           )}

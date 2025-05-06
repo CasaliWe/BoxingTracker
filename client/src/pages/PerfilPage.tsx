@@ -27,11 +27,40 @@ const PerfilPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
+  // Função para aplicar máscara ao número de telefone
+  const formatPhone = (value: string) => {
+    // Remove todos os caracteres não numéricos
+    const numericValue = value.replace(/\D/g, '');
+    
+    // Formatar o número
+    if (numericValue.length <= 11) {
+      let formattedValue = '';
+      
+      if (numericValue.length > 0) {
+        formattedValue = `(${numericValue.slice(0, 2)}`;
+        
+        if (numericValue.length > 2) {
+          formattedValue += `) ${numericValue.slice(2, 7)}`;
+          
+          if (numericValue.length > 7) {
+            formattedValue += `-${numericValue.slice(7, 11)}`;
+          }
+        }
+      }
+      
+      return formattedValue;
+    }
+    
+    // Se for maior que 11 dígitos, corta para 11
+    return formatPhone(numericValue.slice(0, 11));
+  };
+  
   // Atualizar os campos quando o usuário mudar
   useEffect(() => {
     if (user) {
       setName(user.name || '');
-      setPhone(user.phone || '');
+      // Aplicar a máscara ao telefone carregado do banco de dados
+      setPhone(user.phone ? formatPhone(user.phone) : '');
       setAge(user.age ? String(user.age) : '');
       setCity(user.city || '');
       setState(user.state || '');
@@ -47,9 +76,12 @@ const PerfilPage = () => {
       // Salvar as alterações
       setIsLoading(true);
       try {
+        // Remover a formatação do telefone antes de enviar ao servidor
+        const phoneNumberOnly = phone ? phone.replace(/\D/g, '') : '';
+        
         const success = await updateProfile({
           name,
-          phone,
+          phone: phoneNumberOnly,
           age: age ? parseInt(age) : undefined,
           city,
           state,
@@ -296,7 +328,7 @@ const PerfilPage = () => {
                     <input 
                       type="tel" 
                       value={phone} 
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(formatPhone(e.target.value))}
                       disabled={!isEditing}
                       placeholder="(xx) xxxxx-xxxx"
                       className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"

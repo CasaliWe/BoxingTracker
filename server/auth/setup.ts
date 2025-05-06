@@ -27,7 +27,9 @@ export function setupAuth(app: Express) {
   const MemoryStore = memorystore(session);
   
   // Configurar proxy para confiança no header X-Forwarded-* (importante no ambiente Replit)
+  // Configuração importante para funcionamento em ambiente Replit
   app.set('trust proxy', 1);
+  app.enable('trust proxy');
   
   app.use(
     session({
@@ -41,8 +43,9 @@ export function setupAuth(app: Express) {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 30, // 30 dias
         httpOnly: true,
-        secure: false, // MUITO importante: deve ser 'false' em desenvolvimento
-        sameSite: 'none', // Experimente 'none' em vez de 'lax'
+        // sameSite deve ser 'none' quando secure é true, mas no Replit é melhor usar 'lax' com secure=false
+        secure: false, // NÃO mudar para true
+        sameSite: 'lax', 
         path: '/', 
       },
       rolling: true, // Renova o cookie a cada requisição

@@ -136,6 +136,31 @@ const RecuperarSenhaPage = () => {
               </Link>
             </div>
           )}
+
+          {stage === FormStage.SUCCESS_WITH_PASSWORD && (
+            <div className="text-center">
+              <div className="mb-4 flex justify-center">
+                <div className="w-16 h-16 bg-base-dark/20 rounded-full flex items-center justify-center">
+                  <i className="ri-key-2-line text-3xl text-base-base"></i>
+                </div>
+              </div>
+              <p className="text-white mb-2">
+                Senha temporária gerada para <strong>{email}</strong>
+              </p>
+              <div className="bg-muted p-4 rounded-md border border-dark-600 mb-4 mt-4">
+                <p className="font-mono font-bold text-xl tracking-wider text-white">{tempPassword}</p>
+              </div>
+              <p className="text-muted-foreground mb-2 text-sm">
+                Não foi possível enviar um email, mas você pode usar a senha acima para entrar.
+              </p>
+              <p className="text-muted-foreground mb-6 text-sm">
+                Por razões de segurança, altere esta senha após o login.
+              </p>
+              <Link href="/login" className="text-base-base hover:underline">
+                Ir para o login
+              </Link>
+            </div>
+          )}
           
           {stage === FormStage.ERROR && (
             <div className="text-center">

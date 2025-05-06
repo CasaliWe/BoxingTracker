@@ -3,6 +3,7 @@ import session from 'express-session';
 import prisma from '../../prisma/prisma-client';
 import { comparePasswords, hashPassword } from './utils';
 import memorystore from 'memorystore';
+import { sendPasswordResetEmail, generateRandomPassword } from '../utils/email';
 
 // Definir o usuário para Express Request
 declare global {
@@ -303,6 +304,48 @@ export function setupAuth(app: Express) {
     } catch (error) {
       console.error('Erro ao excluir conta:', error);
       res.status(500).json({ message: 'Erro ao excluir conta' });
+    }
+  });
+  
+  // Rota para recuperação de senha
+  app.post('/api/forgot-password', async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email é obrigatório' });
+      }
+      
+      // Verificar se o usuário existe
+      const user = await prisma.user.findUnique({
+        where: { email },
+      });
+      
+      if (!user) {
+        return res.status(404).json({ message: 'Email não encontrado no sistema' });
+      }
+      
+      // Gerar nova senha aleatória
+      const newPassword = generateRandomPassword(8);
+      const hashedPassword = await hashPassword(newPassword);
+      
+      // Atualizar senha do usuário
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashedPassword },
+      });
+      
+      // Enviar email com a nova senha
+      const emailSent = await sendPasswordResetEmail(email, newPassword);
+      
+      if (!emailSent) {
+        return res.status(500).json({ message: 'Erro ao enviar email de recuperação. Por favor, tente novamente mais tarde.' });
+      }
+      
+      res.status(200).json({ message: 'Email de recuperação enviado com sucesso. Verifique sua caixa de entrada.' });
+    } catch (error) {
+      console.error('Erro na recuperação de senha:', error);
+      res.status(500).json({ message: 'Erro ao processar a recuperação de senha' });
     }
   });
 }

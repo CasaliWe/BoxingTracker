@@ -25,6 +25,7 @@ const LoginPage = () => {
     setIsLoading(true);
     
     try {
+      console.log('Tentando login com:', { email });
       const success = await login(email, password);
       
       if (success) {
@@ -37,7 +38,7 @@ const LoginPage = () => {
         setTimeout(() => {
           console.log('Redirecionando para dashboard...');
           setLocation('/');
-        }, 300);
+        }, 500);
       } else {
         toast({
           title: "Falha no login",
@@ -46,6 +47,7 @@ const LoginPage = () => {
         });
       }
     } catch (error) {
+      console.error('Erro detalhado:', error);
       toast({
         title: "Erro no login",
         description: "Ocorreu um erro durante o login. Tente novamente.",

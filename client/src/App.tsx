@@ -12,18 +12,35 @@ import RegistroPage from "@/pages/RegistroPage";
 import RecuperarSenhaPage from "@/pages/RecuperarSenhaPage";
 import { ComboProvider } from "@/context/ComboContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Componente de redirecionamento para rotas protegidas
 const ProtectedRoute = ({ component: Component }: { component: React.ComponentType }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [, setLocation] = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    if (!isAuthenticated) {
-      setLocation('/login');
-    }
-  }, [isAuthenticated, setLocation]);
+    // Breve tempo para permitir que a autenticação seja verificada
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      
+      if (!isAuthenticated) {
+        console.log("Usuário não autenticado. Redirecionando para login...");
+        setLocation('/login');
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, setLocation, user]);
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin h-8 w-8 border-4 border-base-base rounded-full border-t-transparent"></div>
+      </div>
+    );
+  }
   
   return isAuthenticated ? <Component /> : null;
 };

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { saveToken, saveUser, getUser, clearAuth } from '../auth';
+import { saveToken, saveUser, getUser, clearAuth, getToken } from '../auth';
 
+// Tipo do usuário com campo token explícito
 interface User {
   id: number;
   name: string;
@@ -50,15 +51,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (!res.ok) {
-        throw new Error('Falha no login');
+        const errorData = await res.json();
+        console.error('Resposta de erro do servidor:', errorData);
+        throw new Error(errorData.message || 'Falha no login');
       }
       
       const userData = await res.json();
       
+      console.log('Resposta do servidor login:', userData);
+      
       // Salvar token e dados do usuário no localStorage para persistência
       if (userData.token) {
+        console.log('Salvando token no localStorage:', userData.token);
         saveToken(userData.token);
+      } else {
+        console.warn('Token não recebido do servidor');
       }
+      
       saveUser(userData);
       
       // Atualizar estado

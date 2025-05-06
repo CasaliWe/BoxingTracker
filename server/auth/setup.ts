@@ -4,6 +4,7 @@ import prisma from '../../prisma/prisma-client';
 import { comparePasswords, hashPassword } from './utils';
 import memorystore from 'memorystore';
 import { sendPasswordResetEmail, generateRandomPassword } from '../utils/email';
+import { generateToken, verifyToken } from './token';
 
 // Definir o usuário para Express Request
 declare global {
@@ -57,10 +58,45 @@ export function setupAuth(app: Express) {
     next();
   });
 
-  // Middleware para verificar autenticação
+  // Middleware para verificar autenticação (usando token JWT ou sessão como fallback)
   app.use(async (req: Request, res: Response, next: NextFunction) => {
-    if (req.session && req.session.userId) {
-      try {
+    try {
+      // Primeiro tenta verificar pelo token JWT no cabeçalho Authorization
+      const authHeader = req.headers.authorization;
+      
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        const payload = verifyToken(token);
+        
+        if (payload && payload.userId) {
+          const user = await prisma.user.findUnique({
+            where: { id: payload.userId },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              phone: true,
+              age: true,
+              city: true,
+              state: true,
+              weight: true,
+              height: true,
+              gym: true,
+              profileImage: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          });
+          
+          if (user) {
+            req.user = user;
+            return next();
+          }
+        }
+      }
+      
+      // Se não houver token ou se o token for inválido, tenta verificar a sessão
+      if (req.session && req.session.userId) {
         const user = await prisma.user.findUnique({
           where: { id: req.session.userId },
           select: {
@@ -83,10 +119,11 @@ export function setupAuth(app: Express) {
         if (user) {
           req.user = user;
         }
-      } catch (error) {
-        console.error('Erro ao buscar usuário da sessão:', error);
       }
+    } catch (error) {
+      console.error('Erro ao verificar autenticação:', error);
     }
+    
     next();
   });
 
@@ -133,7 +170,10 @@ export function setupAuth(app: Express) {
         },
       });
 
-      // Autenticar o usuário após o registro
+      // Gerar token JWT
+      const token = generateToken(user.id);
+
+      // Também manter a sessão como backup
       req.session.userId = user.id;
       
       // Salvar sessão explicitamente
@@ -149,7 +189,13 @@ export function setupAuth(app: Express) {
         });
       });
       
-      res.status(201).json(user);
+      // Retornar dados do usuário e o token de autenticação
+      const userData = {
+        ...user,
+        token
+      };
+      
+      res.status(201).json(userData);
     } catch (error) {
       console.error('Erro ao registrar usuário:', error);
       res.status(500).json({ message: 'Erro ao criar conta' });
@@ -174,10 +220,13 @@ export function setupAuth(app: Express) {
         return res.status(401).json({ message: 'Email ou senha incorretos' });
       }
 
-      // Autenticar o usuário
+      // Gerar token JWT
+      const token = generateToken(user.id);
+
+      // Também manter a sessão como backup
       req.session.userId = user.id;
       
-      // Salvar sessão e garantir que os cookies sejam definidos
+      // Salvar sessão como backup
       await new Promise<void>((resolve, reject) => {
         req.session.save((err) => {
           if (err) {
@@ -190,7 +239,7 @@ export function setupAuth(app: Express) {
         });
       });
 
-      // Retornar dados do usuário (exceto a senha)
+      // Retornar dados do usuário e o token
       const userData = {
         id: user.id,
         email: user.email,
@@ -205,6 +254,7 @@ export function setupAuth(app: Express) {
         profileImage: user.profileImage,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        token: token // Incluir o token JWT na resposta
       };
 
       res.status(200).json(userData);

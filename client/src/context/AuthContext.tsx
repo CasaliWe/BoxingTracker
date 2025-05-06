@@ -225,13 +225,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await fetch('/api/user', {
         method: 'DELETE',
-        credentials: 'include'
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        credentials: 'include' // Manter cookies como fallback
       });
       
       if (!res.ok) {
         throw new Error('Falha ao excluir conta');
       }
       
+      // Limpar o token do localStorage
+      setToken(null);
       setUser(null);
       return true;
     } catch (error) {

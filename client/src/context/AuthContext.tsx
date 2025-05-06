@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useLocalToken } from '../hooks/useLocalToken';
 
 interface User {
   id: number;
@@ -15,7 +14,7 @@ interface User {
   profileImage?: string;
   createdAt: string;
   updatedAt: string;
-  token?: string; // Adicionado campo para o token JWT
+  token?: string;
 }
 
 interface AuthContextType {
@@ -33,51 +32,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const { token, setToken } = useLocalToken();
   
   const isAuthenticated = !!user;
-
-  // Verifica se o usuário está autenticado ao iniciar a aplicação
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        console.log('Verificando autenticação...');
-        
-        if (!token) {
-          console.log('Nenhum token encontrado no localStorage');
-          setUser(null);
-          return;
-        }
-        
-        // Usar o token JWT no cabeçalho Authorization
-        const res = await fetch('/api/user', {
-          method: 'GET',
-          credentials: 'include', // Manter cookies como fallback
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'Cache-Control': 'no-cache, no-store, must-revalidate'
-          }
-        });
-        
-        if (res.ok) {
-          const userData = await res.json();
-          console.log('Usuário autenticado:', userData);
-          setUser({...userData, token});
-        } else {
-          console.log('Usuário não autenticado ou token expirado');
-          setToken(null);
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Erro ao verificar autenticação:', error);
-        setUser(null);
-      }
-    };
-    
-    checkAuth();
-  }, [token, setToken]);
-
+  
   // Função de login com email/senha
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -86,10 +43,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Cache-Control': 'no-cache'
         },
         body: JSON.stringify({ email, password }),
-        credentials: 'include'  // Importante: mantém cookies como fallback
+        credentials: 'include'
       });
       
       if (!res.ok) {
@@ -97,12 +53,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       const userData = await res.json();
-      
-      // Armazenar o token JWT no localStorage
-      if (userData.token) {
-        setToken(userData.token);
-      }
-      
       setUser(userData);
       
       // Verificar se recebemos os dados do usuário corretamente
@@ -125,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'Accept': 'application/json',
         },
         body: JSON.stringify({ name, email, password }),
-        credentials: 'include' // Manter cookies como fallback
+        credentials: 'include'
       });
       
       if (!res.ok) {
@@ -133,12 +83,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       const userData = await res.json();
-      
-      // Armazenar o token JWT no localStorage
-      if (userData.token) {
-        setToken(userData.token);
-      }
-      
       setUser(userData);
       console.log('Registro bem-sucedido, dados do usuário:', userData);
       return true;
@@ -153,19 +97,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await fetch('/api/logout', {
         method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
-        }
+        credentials: 'include'
       });
       
-      // Limpar o token do localStorage
-      setToken(null);
       setUser(null);
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
       // Mesmo com erro, remover dados de autenticação local
-      setToken(null);
       setUser(null);
     }
   };
@@ -177,10 +115,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
         },
         body: JSON.stringify(userData),
-        credentials: 'include' // Manter cookies como fallback
+        credentials: 'include'
       });
       
       if (!res.ok) {
@@ -188,7 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       const updatedUser = await res.json();
-      setUser(prev => prev ? {...updatedUser, token: prev.token} : null);
+      setUser(prev => prev ? {...updatedUser} : null);
       return true;
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
@@ -203,10 +140,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
         },
         body: JSON.stringify({ currentPassword, newPassword }),
-        credentials: 'include' // Manter cookies como fallback
+        credentials: 'include'
       });
       
       if (!res.ok) {
@@ -225,18 +161,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await fetch('/api/user', {
         method: 'DELETE',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
-        credentials: 'include' // Manter cookies como fallback
+        credentials: 'include'
       });
       
       if (!res.ok) {
         throw new Error('Falha ao excluir conta');
       }
       
-      // Limpar o token do localStorage
-      setToken(null);
       setUser(null);
       return true;
     } catch (error) {
@@ -244,6 +175,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
   };
+
+  // Verificar a sessão ao carregar a aplicação
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        console.log('Verificando autenticação...');
+        
+        const res = await fetch('/api/user', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
+          }
+        });
+        
+        if (res.ok) {
+          const userData = await res.json();
+          console.log('Usuário autenticado:', userData);
+          setUser(userData);
+        } else {
+          console.log('Usuário não autenticado');
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+        setUser(null);
+      }
+    };
+    
+    checkAuth();
+  }, []);
 
   return (
     <AuthContext.Provider value={{ 

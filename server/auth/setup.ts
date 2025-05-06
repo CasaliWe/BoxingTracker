@@ -5,6 +5,7 @@ import { comparePasswords, hashPassword } from './utils';
 import memorystore from 'memorystore';
 import { sendPasswordResetEmail, generateRandomPassword } from '../utils/email';
 import { generateToken, verifyToken } from './token';
+import { profileUpload, deleteProfileImage, getProfileImageUrl } from '../utils/upload';
 
 // Definir o usuário para Express Request
 declare global {

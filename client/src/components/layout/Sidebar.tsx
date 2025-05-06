@@ -89,14 +89,6 @@ const Sidebar: React.FC<SidebarProps> = ({ className, onClose }) => {
       
       {/* Rodapé do sidebar */}
       <div className="p-4 border-t border-dark-600 space-y-4">
-        <Link 
-          to="/configuracoes" 
-          className="flex items-center text-muted-foreground hover:text-white"
-        >
-          <i className="ri-settings-3-line mr-3"></i>
-          <span>Configurações</span>
-        </Link>
-        
         <button 
           onClick={() => {
             logout();

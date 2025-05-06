@@ -298,7 +298,14 @@ export function setupAuth(app: Express) {
     if (!req.user) {
       return res.status(401).json({ message: 'Não autenticado' });
     }
-    res.status(200).json(req.user);
+    
+    // Adicionar a URL completa da imagem de perfil, se existir
+    const userData = {
+      ...req.user,
+      profileImageUrl: getProfileImageUrl(req.user.profileImage)
+    };
+    
+    res.status(200).json(userData);
   });
 
   // Rota para atualizar perfil do usuário
@@ -347,8 +354,14 @@ export function setupAuth(app: Express) {
           updatedAt: true,
         },
       });
+      
+      // Adicionar a URL da imagem de perfil
+      const userData = {
+        ...updatedUser,
+        profileImageUrl: getProfileImageUrl(updatedUser.profileImage)
+      };
 
-      res.status(200).json(updatedUser);
+      res.status(200).json(userData);
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
       res.status(500).json({ message: 'Erro ao atualizar perfil' });

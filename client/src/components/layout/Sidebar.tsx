@@ -45,15 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, onClose }) => {
               <span>Meus Combos</span>
             </Link>
           </li>
-          <li>
-            <Link 
-              to="/historico" 
-              className={`flex items-center px-6 py-3 ${location === '/historico' ? 'text-white border-l-4 border-base-base' : 'text-muted-foreground hover:text-white border-l-4 border-transparent'} hover:bg-muted`}
-            >
-              <i className="ri-history-line mr-3"></i>
-              <span>Histórico</span>
-            </Link>
-          </li>
+
           <li>
             <Link 
               to="/biblioteca" 

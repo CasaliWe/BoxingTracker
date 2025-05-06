@@ -39,8 +39,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkAuth = async () => {
       try {
         console.log('Verificando autenticação...');
+        
+        // Adicionando alguns cabeçalhos extras para garantir o uso de cookies
         const res = await fetch('/api/user', {
-          credentials: 'include'
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
+          }
         });
         
         if (res.ok) {
@@ -67,6 +74,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
         },
         body: JSON.stringify({ email, password }),
         credentials: 'include'  // Importante: inclui cookies na requisição

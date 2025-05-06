@@ -25,21 +25,26 @@ export function setupAuth(app: Express) {
   // Configurar sessão com MemoryStore
   const MemoryStore = memorystore(session);
   
+  // Configurar proxy para confiança no header X-Forwarded-* (importante no ambiente Replit)
+  app.set('trust proxy', 1);
+  
   app.use(
     session({
       store: new MemoryStore({
         checkPeriod: 86400000 // limpar sessões expiradas a cada 24h
       }),
+      name: 'vibeboxing.sid', // Nome personalizado do cookie
       secret: process.env.SESSION_SECRET || 'vibeboxing-secret-key',
       resave: true, // Salva a sessão mesmo se não modificada
-      saveUninitialized: false, // Não cria sessão até que algo seja armazenado
+      saveUninitialized: true, // Cria a sessão para todos os visitantes
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 30, // 30 dias
         httpOnly: true,
-        secure: false, // Definir como false durante o desenvolvimento
-        sameSite: 'lax', // Importante para SPA
-        path: '/', // Garante que o cookie esteja disponível em todo o site
+        secure: false, // MUITO importante: deve ser 'false' em desenvolvimento
+        sameSite: 'none', // Experimente 'none' em vez de 'lax'
+        path: '/', 
       },
+      rolling: true, // Renova o cookie a cada requisição
     })
   );
   
@@ -216,7 +221,7 @@ export function setupAuth(app: Express) {
         console.error('Erro ao fazer logout:', err);
         return res.status(500).json({ message: 'Erro ao fazer logout' });
       }
-      res.clearCookie('connect.sid');
+      res.clearCookie('vibeboxing.sid', { path: '/' });
       res.status(200).json({ message: 'Logout realizado com sucesso' });
     });
   });
@@ -346,7 +351,7 @@ export function setupAuth(app: Express) {
         if (err) {
           console.error('Erro ao destruir sessão após excluir conta:', err);
         }
-        res.clearCookie('connect.sid');
+        res.clearCookie('vibeboxing.sid', { path: '/' });
         res.status(200).json({ message: 'Conta excluída com sucesso' });
       });
     } catch (error) {

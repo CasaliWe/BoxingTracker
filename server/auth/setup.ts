@@ -259,13 +259,23 @@ export function setupAuth(app: Express) {
       if (!currentPassword || !newPassword) {
         return res.status(400).json({ message: 'Senha atual e nova senha são obrigatórias' });
       }
+      
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: 'A nova senha deve ter pelo menos 6 caracteres' });
+      }
 
       // Buscar usuário com senha
       const user = await prisma.user.findUnique({
         where: { id: req.user.id },
       });
 
-      if (!user || !(await comparePasswords(currentPassword, user.password))) {
+      if (!user) {
+        return res.status(404).json({ message: 'Usuário não encontrado' });
+      }
+      
+      // Verificar se a senha atual está correta
+      const isPasswordValid = await comparePasswords(currentPassword, user.password);
+      if (!isPasswordValid) {
         return res.status(401).json({ message: 'Senha atual incorreta' });
       }
 
@@ -316,6 +326,10 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: 'Email é obrigatório' });
       }
       
+      if (!email.includes('@') || !email.includes('.')) {
+        return res.status(400).json({ message: 'Por favor, forneça um email válido' });
+      }
+      
       // Verificar se o usuário existe
       const user = await prisma.user.findUnique({
         where: { email },
@@ -329,17 +343,28 @@ export function setupAuth(app: Express) {
       const newPassword = generateRandomPassword(8);
       const hashedPassword = await hashPassword(newPassword);
       
-      // Atualizar senha do usuário
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { password: hashedPassword },
-      });
+      try {
+        // Atualizar senha do usuário
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { password: hashedPassword },
+        });
+      } catch (updateError) {
+        console.error('Erro ao atualizar senha do usuário:', updateError);
+        return res.status(500).json({ message: 'Erro ao atualizar senha. Por favor, tente novamente mais tarde.' });
+      }
       
       // Enviar email com a nova senha
-      const emailSent = await sendPasswordResetEmail(email, newPassword);
-      
-      if (!emailSent) {
-        return res.status(500).json({ message: 'Erro ao enviar email de recuperação. Por favor, tente novamente mais tarde.' });
+      try {
+        const emailSent = await sendPasswordResetEmail(email, newPassword);
+        
+        if (!emailSent) {
+          // Se falhar ao enviar o email, revertemos a senha para evitar inconsistências
+          return res.status(500).json({ message: 'Erro ao enviar email de recuperação. Por favor, tente novamente mais tarde.' });
+        }
+      } catch (emailError) {
+        console.error('Erro ao enviar email:', emailError);
+        return res.status(500).json({ message: 'Serviço de email temporariamente indisponível. Por favor, tente novamente mais tarde.' });
       }
       
       res.status(200).json({ message: 'Email de recuperação enviado com sucesso. Verifique sua caixa de entrada.' });

@@ -23,7 +23,6 @@ const PerfilPage = () => {
   const [weight, setWeight] = useState(user?.weight ? String(user.weight) : '');
   const [height, setHeight] = useState(user?.height ? String(user.height) : '');
   const [gym, setGym] = useState(user?.gym || '');
-  const [instagram, setInstagram] = useState(user?.instagram || '');
   const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,48 +55,6 @@ const PerfilPage = () => {
     return formatPhone(numericValue.slice(0, 11));
   };
   
-  // Função para formatar idade (máximo 2 dígitos)
-  const formatAge = (value: string) => {
-    // Remove todos os caracteres não numéricos
-    const numericValue = value.replace(/\D/g, '');
-    
-    // Limita a 2 dígitos
-    return numericValue.slice(0, 2);
-  };
-  
-  // Função para formatar estado (2 letras em maiúsculo)
-  const formatState = (value: string) => {
-    // Remove qualquer caractere que não seja letra
-    const lettersOnly = value.replace(/[^a-zA-Z]/g, '');
-    
-    // Converte para maiúsculas e limita a 2 caracteres
-    return lettersOnly.toUpperCase().slice(0, 2);
-  };
-  
-  // Função para formatar altura (em cm)
-  const formatHeight = (value: string) => {
-    // Remove todos os caracteres não numéricos
-    const numericValue = value.replace(/\D/g, '');
-    
-    // Limita a 3 dígitos (altura em cm)
-    return numericValue.slice(0, 3);
-  };
-  
-  // Função para formatar peso
-  const formatWeight = (value: string) => {
-    // Remove caracteres não numéricos e não ponto
-    const filteredValue = value.replace(/[^\d.]/g, '');
-    
-    // Verifica se já tem um ponto decimal
-    if (filteredValue.includes('.')) {
-      const parts = filteredValue.split('.');
-      // Garante que só tem um ponto decimal e no máximo 1 casa decimal
-      return `${parts[0]}.${parts[1].slice(0, 1)}`;
-    }
-    
-    return filteredValue;
-  };
-  
   // Atualizar os campos quando o usuário mudar
   useEffect(() => {
     if (user) {
@@ -110,7 +67,6 @@ const PerfilPage = () => {
       setWeight(user.weight ? String(user.weight) : '');
       setHeight(user.height ? String(user.height) : '');
       setGym(user.gym || '');
-      setInstagram(user.instagram || '');
       setProfileImage(user.profileImage || null);
     }
   }, [user]);
@@ -128,11 +84,10 @@ const PerfilPage = () => {
           phone: phoneNumberOnly,
           age: age ? parseInt(age) : undefined,
           city,
-          state: state.trim() ? state : undefined,
+          state,
           weight: weight ? parseFloat(weight) : undefined,
           height: height ? parseFloat(height) : undefined,
-          gym: gym.trim() || undefined,
-          instagram: instagram.trim() || undefined
+          gym
           // Remova o campo profileImage aqui, pois será gerenciado separadamente
         });
         
@@ -383,12 +338,11 @@ const PerfilPage = () => {
                   <div className="space-y-2">
                     <label className="block text-sm text-muted-foreground">Idade</label>
                     <input 
-                      type="text" 
+                      type="number" 
                       value={age} 
-                      onChange={(e) => setAge(formatAge(e.target.value))}
+                      onChange={(e) => setAge(e.target.value)}
                       disabled={!isEditing}
                       placeholder="Ex: 25"
-                      maxLength={2}
                       className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
                     />
                   </div>
@@ -410,10 +364,9 @@ const PerfilPage = () => {
                     <input 
                       type="text" 
                       value={state} 
-                      onChange={(e) => setState(formatState(e.target.value))}
+                      onChange={(e) => setState(e.target.value)}
                       disabled={!isEditing}
                       placeholder="Ex: SP"
-                      maxLength={2}
                       className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
                     />
                   </div>
@@ -421,11 +374,11 @@ const PerfilPage = () => {
                   <div className="space-y-2">
                     <label className="block text-sm text-muted-foreground">Peso (kg)</label>
                     <input 
-                      type="text" 
+                      type="number" 
                       value={weight} 
-                      onChange={(e) => setWeight(formatWeight(e.target.value))}
+                      onChange={(e) => setWeight(e.target.value)}
                       disabled={!isEditing}
-                      placeholder="Ex: 70.5"
+                      placeholder="Ex: 70"
                       className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
                     />
                   </div>
@@ -433,12 +386,11 @@ const PerfilPage = () => {
                   <div className="space-y-2">
                     <label className="block text-sm text-muted-foreground">Altura (cm)</label>
                     <input 
-                      type="text" 
+                      type="number" 
                       value={height} 
-                      onChange={(e) => setHeight(formatHeight(e.target.value))}
+                      onChange={(e) => setHeight(e.target.value)}
                       disabled={!isEditing}
                       placeholder="Ex: 175"
-                      maxLength={3}
                       className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
                     />
                   </div>
@@ -451,18 +403,6 @@ const PerfilPage = () => {
                       onChange={(e) => setGym(e.target.value)}
                       disabled={!isEditing}
                       placeholder="Nome da academia onde treina"
-                      className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="block text-sm text-muted-foreground">Instagram</label>
-                    <input 
-                      type="text" 
-                      value={instagram} 
-                      onChange={(e) => setInstagram(e.target.value)}
-                      disabled={!isEditing}
-                      placeholder="Ex: @seuusuario"
                       className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
                     />
                   </div>

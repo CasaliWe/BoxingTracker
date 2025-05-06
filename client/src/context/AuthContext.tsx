@@ -13,7 +13,6 @@ interface User {
   weight?: number;
   height?: number;
   gym?: string;
-  instagram?: string;
   profileImage?: string;
   profileImageUrl?: string; // URL completa da imagem para exibição
   createdAt: string;

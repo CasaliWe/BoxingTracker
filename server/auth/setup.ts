@@ -86,7 +86,6 @@ export function setupAuth(app: Express) {
               weight: true,
               height: true,
               gym: true,
-              instagram: true,
               profileImage: true,
               createdAt: true,
               updatedAt: true,
@@ -120,7 +119,6 @@ export function setupAuth(app: Express) {
             weight: true,
             height: true,
             gym: true,
-            instagram: true,
             profileImage: true,
             createdAt: true,
             updatedAt: true,
@@ -183,7 +181,6 @@ export function setupAuth(app: Express) {
           weight: true,
           height: true,
           gym: true,
-          instagram: true,
           profileImage: true,
           createdAt: true,
           updatedAt: true,
@@ -329,7 +326,6 @@ export function setupAuth(app: Express) {
         weight,
         height,
         gym,
-        instagram,
       } = req.body;
 
       const updatedUser = await prisma.user.update({
@@ -343,7 +339,6 @@ export function setupAuth(app: Express) {
           weight: weight ? parseFloat(weight) : undefined,
           height: height ? parseFloat(height) : undefined,
           gym: gym || undefined,
-          instagram: instagram || undefined,
         },
         select: {
           id: true,
@@ -356,7 +351,6 @@ export function setupAuth(app: Express) {
           weight: true,
           height: true,
           gym: true,
-          instagram: true,
           profileImage: true,
           createdAt: true,
           updatedAt: true,
@@ -416,7 +410,6 @@ export function setupAuth(app: Express) {
           weight: true,
           height: true,
           gym: true,
-          instagram: true,
           profileImage: true,
           createdAt: true,
           updatedAt: true,

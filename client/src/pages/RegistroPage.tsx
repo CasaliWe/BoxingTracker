@@ -9,7 +9,7 @@ const RegistroPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { register, loginWithGoogle } = useAuth();
+  const { register } = useAuth();
   const [_, setLocation] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,35 +62,7 @@ const RegistroPage = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    
-    try {
-      const success = await loginWithGoogle();
-      
-      if (success) {
-        toast({
-          title: "Registro realizado com sucesso!",
-          description: "Bem-vindo ao VibeBoxing."
-        });
-        setLocation('/');
-      } else {
-        toast({
-          title: "Falha no registro",
-          description: "Não foi possível fazer registro com Google.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro no registro",
-        description: "Ocorreu um erro durante o registro com Google. Tente novamente.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background px-4">
@@ -169,21 +141,6 @@ const RegistroPage = () => {
               Criar conta
             </button>
           </form>
-          
-          <div className="my-6 flex items-center">
-            <div className="flex-grow border-t border-dark-600"></div>
-            <span className="mx-4 text-sm text-muted-foreground">ou</span>
-            <div className="flex-grow border-t border-dark-600"></div>
-          </div>
-          
-          <button 
-            onClick={handleGoogleLogin}
-            className="w-full bg-muted hover:bg-secondary text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex justify-center items-center"
-            disabled={isLoading}
-          >
-            <i className="ri-google-fill mr-2 text-lg"></i>
-            Cadastrar com Google
-          </button>
           
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">

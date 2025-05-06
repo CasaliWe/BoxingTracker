@@ -7,7 +7,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login, loginWithGoogle } = useAuth();
+  const { login } = useAuth();
   const [_, setLocation] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,36 +44,6 @@ const LoginPage = () => {
       toast({
         title: "Erro no login",
         description: "Ocorreu um erro durante o login. Tente novamente.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    
-    try {
-      const success = await loginWithGoogle();
-      
-      if (success) {
-        toast({
-          title: "Login realizado com sucesso!",
-          description: "Bem-vindo de volta ao VibeBoxing."
-        });
-        setLocation('/');
-      } else {
-        toast({
-          title: "Falha no login",
-          description: "Não foi possível fazer login com Google.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro no login",
-        description: "Ocorreu um erro durante o login com Google. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -137,21 +107,6 @@ const LoginPage = () => {
               Entrar
             </button>
           </form>
-          
-          <div className="my-6 flex items-center">
-            <div className="flex-grow border-t border-dark-600"></div>
-            <span className="mx-4 text-sm text-muted-foreground">ou</span>
-            <div className="flex-grow border-t border-dark-600"></div>
-          </div>
-          
-          <button 
-            onClick={handleGoogleLogin}
-            className="w-full bg-muted hover:bg-secondary text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex justify-center items-center"
-            disabled={isLoading}
-          >
-            <i className="ri-google-fill mr-2 text-lg"></i>
-            Entrar com Google
-          </button>
           
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">

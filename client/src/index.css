@@ -1,0 +1,284 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 98%;
+    
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
+    
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 98%;
+    
+    --primary: 267 100% 63%;
+    --primary-foreground: 0 0% 98%;
+    
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 98%;
+    
+    --muted: 0 0% 27%;
+    --muted-foreground: 0 0% 64%;
+    
+    --accent: 267 100% 63%;
+    --accent-foreground: 0 0% 98%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 267 100% 63%;
+    
+    --sidebar-background: 0 0% 12%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 267 100% 63%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 267 100% 63%;
+
+    /* Cores específicas para golpes de boxe */
+    --ataques-base: 0 84% 60%;
+    --ataques-light: 0 84% 82%;
+    --ataques-dark: 0 84% 42%;
+    
+    --esquivas-base: 214 90% 60%;
+    --esquivas-light: 214 90% 82%;
+    --esquivas-dark: 214 90% 42%;
+
+    --bloqueios-base: 48 93% 53%;
+    --bloqueios-light: 48 93% 75%;
+    --bloqueios-dark: 48 93% 40%;
+
+    --footwork-base: 158 83% 40%;
+    --footwork-light: 158 83% 70%;
+    --footwork-dark: 158 83% 25%;
+
+    --guardas-base: 27 96% 53%;
+    --guardas-light: 27 96% 73%;
+    --guardas-dark: 27 96% 40%;
+
+    --base-base: 267 100% 63%;
+    --base-light: 267 100% 85%;
+    --base-dark: 267 100% 42%;
+
+    --clinch-base: 322 84% 60%;
+    --clinch-light: 322 84% 82%;
+    --clinch-dark: 322 84% 42%;
+    
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 98%;
+    
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
+    
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 98%;
+    
+    --primary: 267 100% 63%;
+    --primary-foreground: 0 0% 98%;
+    
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 98%;
+    
+    --muted: 0 0% 27%;
+    --muted-foreground: 0 0% 64%;
+    
+    --accent: 267 100% 63%;
+    --accent-foreground: 0 0% 98%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 267 100% 63%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground dark;
+  }
+}
+
+/* Classe para evitar barras de rolagem em elementos com overflow */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Classes específicas para cores de tipos de golpes */
+.bg-ataques-base {
+  background-color: hsl(var(--ataques-base));
+}
+.bg-ataques-light {
+  background-color: hsl(var(--ataques-light));
+}
+.bg-ataques-dark {
+  background-color: hsl(var(--ataques-dark));
+}
+
+.bg-esquivas-base {
+  background-color: hsl(var(--esquivas-base));
+}
+.bg-esquivas-light {
+  background-color: hsl(var(--esquivas-light));
+}
+.bg-esquivas-dark {
+  background-color: hsl(var(--esquivas-dark));
+}
+
+.bg-bloqueios-base {
+  background-color: hsl(var(--bloqueios-base));
+}
+.bg-bloqueios-light {
+  background-color: hsl(var(--bloqueios-light));
+}
+.bg-bloqueios-dark {
+  background-color: hsl(var(--bloqueios-dark));
+}
+
+.bg-footwork-base {
+  background-color: hsl(var(--footwork-base));
+}
+.bg-footwork-light {
+  background-color: hsl(var(--footwork-light));
+}
+.bg-footwork-dark {
+  background-color: hsl(var(--footwork-dark));
+}
+
+.bg-guardas-base {
+  background-color: hsl(var(--guardas-base));
+}
+.bg-guardas-light {
+  background-color: hsl(var(--guardas-light));
+}
+.bg-guardas-dark {
+  background-color: hsl(var(--guardas-dark));
+}
+
+.bg-base-base {
+  background-color: hsl(var(--base-base));
+}
+.bg-base-light {
+  background-color: hsl(var(--base-light));
+}
+.bg-base-dark {
+  background-color: hsl(var(--base-dark));
+}
+
+.bg-clinch-base {
+  background-color: hsl(var(--clinch-base));
+}
+.bg-clinch-light {
+  background-color: hsl(var(--clinch-light));
+}
+.bg-clinch-dark {
+  background-color: hsl(var(--clinch-dark));
+}
+
+.hover\:bg-ataques-base:hover {
+  background-color: hsl(var(--ataques-base));
+}
+.hover\:bg-ataques-dark:hover {
+  background-color: hsl(var(--ataques-dark));
+}
+
+.hover\:bg-esquivas-base:hover {
+  background-color: hsl(var(--esquivas-base));
+}
+.hover\:bg-esquivas-dark:hover {
+  background-color: hsl(var(--esquivas-dark));
+}
+
+.hover\:bg-bloqueios-base:hover {
+  background-color: hsl(var(--bloqueios-base));
+}
+.hover\:bg-bloqueios-dark:hover {
+  background-color: hsl(var(--bloqueios-dark));
+}
+
+.hover\:bg-footwork-base:hover {
+  background-color: hsl(var(--footwork-base));
+}
+.hover\:bg-footwork-dark:hover {
+  background-color: hsl(var(--footwork-dark));
+}
+
+.hover\:bg-guardas-base:hover {
+  background-color: hsl(var(--guardas-base));
+}
+.hover\:bg-guardas-dark:hover {
+  background-color: hsl(var(--guardas-dark));
+}
+
+.hover\:bg-base-base:hover {
+  background-color: hsl(var(--base-base));
+}
+.hover\:bg-base-dark:hover {
+  background-color: hsl(var(--base-dark));
+}
+
+.hover\:bg-clinch-base:hover {
+  background-color: hsl(var(--clinch-base));
+}
+.hover\:bg-clinch-dark:hover {
+  background-color: hsl(var(--clinch-dark));
+}
+
+.border-ataques-base {
+  border-color: hsl(var(--ataques-base));
+}
+.border-ataques-dark {
+  border-color: hsl(var(--ataques-dark));
+}
+
+.border-base-base {
+  border-color: hsl(var(--base-base));
+}
+.border-base-dark {
+  border-color: hsl(var(--base-dark));
+}
+
+.border-guardas-base {
+  border-color: hsl(var(--guardas-base));
+}
+.border-guardas-dark {
+  border-color: hsl(var(--guardas-dark));
+}
+
+.text-ataques-base {
+  color: hsl(var(--ataques-base));
+}
+.text-bloqueios-base {
+  color: hsl(var(--bloqueios-base));
+}
+.text-footwork-base {
+  color: hsl(var(--footwork-base));
+}
+.text-base-base {
+  color: hsl(var(--base-base));
+}
+
+.hover\:border-base-dark:hover {
+  border-color: hsl(var(--base-dark));
+}
+.hover\:border-guardas-dark:hover {
+  border-color: hsl(var(--guardas-dark));
+}

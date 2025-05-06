@@ -1,23 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import MobileHeader from '@/components/layout/MobileHeader';
 import { useMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useLocation } from 'wouter';
 
 const PerfilPage = () => {
   const { isMobile } = useMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   
   // Estados para os campos do perfil
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState('');
   const [age, setAge] = useState('');
   const [city, setCity] = useState('');
+  const [state, setState] = useState('');
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
   const [gym, setGym] = useState('');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   
   const handleToggleEdit = () => {
@@ -34,6 +37,40 @@ const PerfilPage = () => {
   
   const handleMobileMenuToggle = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+  
+  const handleChangePassword = () => {
+    toast({
+      title: "Alteração de senha",
+      description: "Um link para alteração de senha foi enviado para seu email."
+    });
+  };
+  
+  const handleDeleteAccount = () => {
+    if (window.confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.')) {
+      toast({
+        title: "Conta excluída",
+        description: "Sua conta foi excluída com sucesso."
+      });
+      
+      // Redirecionar para a página de login
+      const [_, setLocation] = useLocation();
+      logout();
+      setLocation('/login');
+    }
+  };
+  
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setProfileImage(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
   };
   
   return (
@@ -74,8 +111,12 @@ const PerfilPage = () => {
             <div className="bg-card rounded-xl border border-dark-600 overflow-hidden">
               {/* Cabeçalho do perfil */}
               <div className="p-6 border-b border-dark-600 flex flex-col md:flex-row items-center gap-6">
-                <div className="w-24 h-24 rounded-full bg-base-dark/30 flex items-center justify-center">
-                  <i className="ri-user-line text-4xl text-white"></i>
+                <div className="w-24 h-24 rounded-full bg-base-dark/30 flex items-center justify-center overflow-hidden">
+                  {profileImage ? (
+                    <img src={profileImage} alt="Foto de perfil" className="w-full h-full object-cover" />
+                  ) : (
+                    <i className="ri-user-line text-4xl text-white"></i>
+                  )}
                 </div>
                 
                 <div className="text-center md:text-left">
@@ -83,9 +124,15 @@ const PerfilPage = () => {
                   <p className="text-muted-foreground">{user?.email}</p>
                   
                   {isEditing && (
-                    <button className="mt-2 text-sm text-base-base hover:underline">
+                    <label className="mt-2 text-sm text-base-base hover:underline cursor-pointer">
                       Alterar foto de perfil
-                    </button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageUpload}
+                      />
+                    </label>
                   )}
                 </div>
               </div>
@@ -146,6 +193,18 @@ const PerfilPage = () => {
                       onChange={(e) => setCity(e.target.value)}
                       disabled={!isEditing}
                       placeholder="Ex: São Paulo"
+                      className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm text-muted-foreground">Estado</label>
+                    <input 
+                      type="text" 
+                      value={state} 
+                      onChange={(e) => setState(e.target.value)}
+                      disabled={!isEditing}
+                      placeholder="Ex: SP"
                       className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
                     />
                   </div>

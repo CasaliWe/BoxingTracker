@@ -383,11 +383,12 @@ const PerfilPage = () => {
                   <div className="space-y-2">
                     <label className="block text-sm text-muted-foreground">Idade</label>
                     <input 
-                      type="number" 
+                      type="text" 
                       value={age} 
-                      onChange={(e) => setAge(e.target.value)}
+                      onChange={(e) => setAge(formatAge(e.target.value))}
                       disabled={!isEditing}
                       placeholder="Ex: 25"
+                      maxLength={2}
                       className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
                     />
                   </div>
@@ -409,9 +410,10 @@ const PerfilPage = () => {
                     <input 
                       type="text" 
                       value={state} 
-                      onChange={(e) => setState(e.target.value)}
+                      onChange={(e) => setState(formatState(e.target.value))}
                       disabled={!isEditing}
                       placeholder="Ex: SP"
+                      maxLength={2}
                       className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
                     />
                   </div>
@@ -419,11 +421,11 @@ const PerfilPage = () => {
                   <div className="space-y-2">
                     <label className="block text-sm text-muted-foreground">Peso (kg)</label>
                     <input 
-                      type="number" 
+                      type="text" 
                       value={weight} 
-                      onChange={(e) => setWeight(e.target.value)}
+                      onChange={(e) => setWeight(formatWeight(e.target.value))}
                       disabled={!isEditing}
-                      placeholder="Ex: 70"
+                      placeholder="Ex: 70.5"
                       className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
                     />
                   </div>
@@ -431,11 +433,12 @@ const PerfilPage = () => {
                   <div className="space-y-2">
                     <label className="block text-sm text-muted-foreground">Altura (cm)</label>
                     <input 
-                      type="number" 
+                      type="text" 
                       value={height} 
-                      onChange={(e) => setHeight(e.target.value)}
+                      onChange={(e) => setHeight(formatHeight(e.target.value))}
                       disabled={!isEditing}
                       placeholder="Ex: 175"
+                      maxLength={3}
                       className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
                     />
                   </div>
@@ -448,6 +451,18 @@ const PerfilPage = () => {
                       onChange={(e) => setGym(e.target.value)}
                       disabled={!isEditing}
                       placeholder="Nome da academia onde treina"
+                      className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="block text-sm text-muted-foreground">Instagram</label>
+                    <input 
+                      type="text" 
+                      value={instagram} 
+                      onChange={(e) => setInstagram(e.target.value)}
+                      disabled={!isEditing}
+                      placeholder="Ex: @seuusuario"
                       className="w-full px-3 py-2 bg-muted rounded-md border border-dark-600 text-white disabled:opacity-70"
                     />
                   </div>

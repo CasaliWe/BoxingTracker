@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { saveToken, saveUser, getUser, clearAuth } from '../auth';
 
 interface User {
   id: number;
@@ -53,6 +54,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       const userData = await res.json();
+      
+      // Salvar token e dados do usuário no localStorage para persistência
+      if (userData.token) {
+        saveToken(userData.token);
+      }
+      saveUser(userData);
+      
+      // Atualizar estado
       setUser(userData);
       
       // Verificar se recebemos os dados do usuário corretamente
@@ -83,7 +92,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       const userData = await res.json();
+      
+      // Salvar token e dados do usuário no localStorage para persistência
+      if (userData.token) {
+        saveToken(userData.token);
+      }
+      saveUser(userData);
+      
+      // Atualizar estado
       setUser(userData);
+      
       console.log('Registro bem-sucedido, dados do usuário:', userData);
       return true;
     } catch (error) {
@@ -100,10 +118,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         credentials: 'include'
       });
       
+      // Limpar dados de autenticação do localStorage
+      clearAuth();
+      
+      // Atualizar estado
       setUser(null);
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
       // Mesmo com erro, remover dados de autenticação local
+      clearAuth();
       setUser(null);
     }
   };
@@ -125,6 +148,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       const updatedUser = await res.json();
+      
+      // Atualizar dados no localStorage
+      const currentUser = getUser();
+      if (currentUser) {
+        const mergedUser = { ...currentUser, ...updatedUser };
+        saveUser(mergedUser);
+      }
+      
+      // Atualizar estado
       setUser(prev => prev ? {...updatedUser} : null);
       return true;
     } catch (error) {
@@ -168,6 +200,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Falha ao excluir conta');
       }
       
+      // Limpar dados de autenticação do localStorage
+      clearAuth();
+      
+      // Atualizar estado
       setUser(null);
       return true;
     } catch (error) {
@@ -176,11 +212,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Verificar a sessão ao carregar a aplicação
+  // Verificar login no carregamento da aplicação
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadUserFromStorage = () => {
+      // Primeiro, tentar obter o usuário do localStorage
+      const savedUser = getUser();
+      if (savedUser && savedUser.token) {
+        console.log('Usuário encontrado no localStorage:', savedUser);
+        setUser(savedUser);
+        return true;
+      }
+      return false;
+    };
+
+    const checkServerAuth = async () => {
       try {
-        console.log('Verificando autenticação...');
+        console.log('Verificando autenticação no servidor...');
         
         const res = await fetch('/api/user', {
           method: 'GET',
@@ -193,19 +240,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (res.ok) {
           const userData = await res.json();
-          console.log('Usuário autenticado:', userData);
+          console.log('Usuário autenticado no servidor:', userData);
+          
+          // Salvar no localStorage para persistência
+          if (userData.token) {
+            saveToken(userData.token);
+          }
+          saveUser(userData);
+          
           setUser(userData);
+          return true;
         } else {
-          console.log('Usuário não autenticado');
-          setUser(null);
+          console.log('Usuário não autenticado no servidor');
+          return false;
         }
       } catch (error) {
-        console.error('Erro ao verificar autenticação:', error);
-        setUser(null);
+        console.error('Erro ao verificar autenticação no servidor:', error);
+        return false;
       }
     };
     
-    checkAuth();
+    // Primeiro tentar do localStorage, se não funcionar, tentar do servidor
+    const userLoaded = loadUserFromStorage();
+    if (!userLoaded) {
+      checkServerAuth().catch(err => {
+        console.error("Erro ao verificar autenticação:", err);
+        setUser(null);
+        clearAuth();
+      });
+    }
   }, []);
 
   return (

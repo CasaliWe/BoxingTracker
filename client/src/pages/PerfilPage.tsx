@@ -84,8 +84,8 @@ const PerfilPage = () => {
       {isMobile && mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={handleMobileMenuToggle}></div>
-          <div className="fixed top-0 left-0 bottom-0 w-64">
-            <Sidebar onClose={handleMobileMenuToggle} />
+          <div className="fixed top-0 left-0 bottom-0 w-64 h-full">
+            <Sidebar onClose={handleMobileMenuToggle} className="h-full" />
           </div>
         </div>
       )}

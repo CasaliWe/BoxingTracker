@@ -8,7 +8,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ className, onClose }) => {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { user, logout } = useAuth();
 
   return (
@@ -93,7 +93,6 @@ const Sidebar: React.FC<SidebarProps> = ({ className, onClose }) => {
         <button 
           onClick={() => {
             logout();
-            const [_, setLocation] = useLocation();
             setLocation('/login');
             if (onClose) onClose();
           }}

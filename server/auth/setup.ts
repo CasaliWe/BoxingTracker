@@ -326,6 +326,7 @@ export function setupAuth(app: Express) {
         weight,
         height,
         gym,
+        instagram,
       } = req.body;
 
       const updatedUser = await prisma.user.update({
@@ -339,6 +340,7 @@ export function setupAuth(app: Express) {
           weight: weight ? parseFloat(weight) : undefined,
           height: height ? parseFloat(height) : undefined,
           gym: gym || undefined,
+          instagram: instagram || undefined,
         },
         select: {
           id: true,

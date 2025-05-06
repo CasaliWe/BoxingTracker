@@ -113,11 +113,12 @@ export const ComboProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     try {
       const token = getToken();
+      // Já que estamos enviando para a API, precisamos preparar os dados corretamente
       const apiCombo = {
         nome: novoCombo.nome,
         base: novoCombo.base,
         guarda: novoCombo.guarda,
-        etapas: JSON.stringify(novoCombo.etapas),
+        etapas: novoCombo.etapas, // Será transformado em string na API
         dataModificacao: novoCombo.dataModificacao
       };
       
@@ -201,7 +202,7 @@ export const ComboProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         nome: dadosAtualizados.nome,
         base: dadosAtualizados.base,
         guarda: dadosAtualizados.guarda,
-        etapas: JSON.stringify(dadosAtualizados.etapas),
+        etapas: dadosAtualizados.etapas, // Será transformado em string na API
         dataModificacao: dadosAtualizados.dataModificacao
       };
       

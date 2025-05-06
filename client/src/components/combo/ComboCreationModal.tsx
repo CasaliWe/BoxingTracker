@@ -80,7 +80,7 @@ const ComboCreationModal: React.FC<ComboCreationModalProps> = ({ onClose }) => {
         nome: `Combo ${selectedBase === 'destro' ? 'Destro' : 'Canhoto'} ${new Date().toLocaleDateString('pt-BR')}`,
         base: selectedBase,
         guarda: selectedGuarda,
-        etapas: JSON.stringify(steps), // Convertendo para JSON string conforme esperado pela API
+        etapas: steps, // Mantendo o array de objetos, a API vai converter para JSON
         dataModificacao: new Date().toISOString()
       };
       

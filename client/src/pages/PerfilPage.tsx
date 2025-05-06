@@ -253,6 +253,7 @@ const PerfilPage = () => {
                     <button 
                       className="text-base-base hover:underline"
                       disabled={isEditing}
+                      onClick={handleChangePassword}
                     >
                       Alterar senha
                     </button>
@@ -261,6 +262,7 @@ const PerfilPage = () => {
                       <button 
                         className="text-ataques-base hover:underline"
                         disabled={isEditing}
+                        onClick={handleDeleteAccount}
                       >
                         Excluir minha conta
                       </button>

@@ -138,6 +138,29 @@ const ComboCreationModal: React.FC<ComboCreationModalProps> = ({ onClose }) => {
     setCurrentSubStep(index);
   };
   
+  const handleRemoveStep = (index: number) => {
+    if (steps.length <= 1) {
+      toast({
+        title: "Não é possível remover",
+        description: "Um combo deve ter pelo menos uma etapa.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (window.confirm('Tem certeza que deseja remover esta etapa?')) {
+      const newSteps = steps.filter((_, i) => i !== index);
+      setSteps(newSteps);
+      
+      // Ajustar o sub-step atual se necessário
+      if (currentSubStep >= newSteps.length) {
+        setCurrentSubStep(newSteps.length - 1);
+      } else if (currentSubStep === index) {
+        setCurrentSubStep(Math.max(index - 1, 0));
+      }
+    }
+  };
+  
   const golpesDaCategoria = obterGolpesPorCategoria(categoriaAtual, selectedBase);
   
   return (
@@ -281,7 +304,17 @@ const ComboCreationModal: React.FC<ComboCreationModalProps> = ({ onClose }) => {
               
               {/* Golpes selecionados */}
               <div className="mb-4">
-                <h5 className="text-sm text-muted-foreground mb-2">Golpes Selecionados - Etapa {currentSubStep + 1}:</h5>
+                <div className="flex justify-between items-center mb-2">
+                  <h5 className="text-sm text-muted-foreground">Golpes Selecionados - Etapa {currentSubStep + 1}:</h5>
+                  {steps.length > 1 && (
+                    <button 
+                      onClick={() => handleRemoveStep(currentSubStep)}
+                      className="text-xs bg-ataques-dark hover:bg-ataques-base px-2 py-1 rounded-md text-white"
+                    >
+                      Remover etapa
+                    </button>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-2 min-h-16 p-3 bg-muted rounded-lg border border-dark-600">
                   {steps[currentSubStep]?.golpes.map((golpe, index) => (
                     <GolpeTag 

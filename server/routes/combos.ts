@@ -19,10 +19,20 @@ export function setupCombosRoutes(app: Express) {
       });
 
       // Transformar o campo etapas de JSON string para objeto
-      const formattedCombos = combos.map(combo => ({
-        ...combo,
-        etapas: JSON.parse(combo.etapas),
-      }));
+      const formattedCombos = combos.map(combo => {
+        try {
+          return {
+            ...combo,
+            etapas: JSON.parse(combo.etapas),
+          };
+        } catch (err) {
+          console.error(`Erro ao fazer parse das etapas do combo ${combo.id}:`, err);
+          return {
+            ...combo,
+            etapas: [],
+          };
+        }
+      });
 
       res.json(formattedCombos);
     } catch (error) {
@@ -36,7 +46,8 @@ export function setupCombosRoutes(app: Express) {
     try {
       const comboId = parseInt(req.params.id);
       
-      const combo = await prisma.combo.findUnique({
+      // Verificar se o combo existe e pertence ao usuário
+      const combo = await prisma.combo.findFirst({
         where: { 
           id: comboId,
           userId: req.user.id
@@ -44,13 +55,21 @@ export function setupCombosRoutes(app: Express) {
       });
 
       if (!combo) {
-        return res.status(404).json({ message: 'Combo não encontrado' });
+        return res.status(404).json({ message: 'Combo não encontrado ou não autorizado' });
       }
 
       // Transformar o campo etapas de JSON string para objeto
+      let etapasObj;
+      try {
+        etapasObj = JSON.parse(combo.etapas);
+      } catch (err) {
+        console.error(`Erro ao fazer parse das etapas do combo ${combo.id}:`, err);
+        etapasObj = [];
+      }
+
       const formattedCombo = {
         ...combo,
-        etapas: JSON.parse(combo.etapas),
+        etapas: etapasObj,
       };
 
       res.json(formattedCombo);
@@ -69,21 +88,39 @@ export function setupCombosRoutes(app: Express) {
         return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
       }
 
+      let etapasString = etapas;
+      if (typeof etapas !== 'string') {
+        try {
+          etapasString = JSON.stringify(etapas);
+        } catch (err) {
+          console.error('Erro ao converter etapas para string:', err);
+          return res.status(400).json({ message: 'Formato de etapas inválido' });
+        }
+      }
+
       const combo = await prisma.combo.create({
         data: {
           userId: req.user.id,
           name: nome,
           base,
           guarda,
-          etapas: typeof etapas === 'string' ? etapas : JSON.stringify(etapas),
+          etapas: etapasString,
           dataModificacao: new Date(),
         },
       });
 
       // Transformar o campo etapas de JSON string para objeto
+      let etapasObj;
+      try {
+        etapasObj = JSON.parse(combo.etapas);
+      } catch (err) {
+        console.error(`Erro ao fazer parse das etapas do combo ${combo.id}:`, err);
+        etapasObj = [];
+      }
+
       const formattedCombo = {
         ...combo,
-        etapas: JSON.parse(combo.etapas),
+        etapas: etapasObj,
       };
 
       res.status(201).json(formattedCombo);
@@ -99,17 +136,31 @@ export function setupCombosRoutes(app: Express) {
       const comboId = parseInt(req.params.id);
       const { nome, base, guarda, etapas } = req.body;
 
-      // Verificar se o combo pertence ao usuário
-      const existingCombo = await prisma.combo.findUnique({
-        where: { id: comboId },
+      // Verificar se o combo existe e pertence ao usuário
+      const existingCombo = await prisma.combo.findFirst({
+        where: { 
+          id: comboId,
+          userId: req.user.id 
+        },
       });
 
       if (!existingCombo) {
-        return res.status(404).json({ message: 'Combo não encontrado' });
+        return res.status(404).json({ message: 'Combo não encontrado ou não autorizado' });
       }
 
-      if (existingCombo.userId !== req.user.id) {
-        return res.status(403).json({ message: 'Não autorizado' });
+      // Preparar etapas como string
+      let etapasString = undefined;
+      if (etapas) {
+        if (typeof etapas === 'string') {
+          etapasString = etapas;
+        } else {
+          try {
+            etapasString = JSON.stringify(etapas);
+          } catch (err) {
+            console.error('Erro ao converter etapas para string:', err);
+            return res.status(400).json({ message: 'Formato de etapas inválido' });
+          }
+        }
       }
 
       // Atualizar o combo
@@ -119,15 +170,23 @@ export function setupCombosRoutes(app: Express) {
           name: nome || undefined,
           base: base || undefined,
           guarda: guarda || undefined,
-          etapas: etapas ? (typeof etapas === 'string' ? etapas : JSON.stringify(etapas)) : undefined,
+          etapas: etapasString,
           dataModificacao: new Date(),
         },
       });
 
       // Transformar o campo etapas de JSON string para objeto
+      let etapasObj;
+      try {
+        etapasObj = JSON.parse(combo.etapas);
+      } catch (err) {
+        console.error(`Erro ao fazer parse das etapas do combo ${combo.id}:`, err);
+        etapasObj = [];
+      }
+
       const formattedCombo = {
         ...combo,
-        etapas: JSON.parse(combo.etapas),
+        etapas: etapasObj,
       };
 
       res.json(formattedCombo);
@@ -142,20 +201,19 @@ export function setupCombosRoutes(app: Express) {
     try {
       const comboId = parseInt(req.params.id);
 
-      // Verificar se o combo pertence ao usuário
-      const existingCombo = await prisma.combo.findUnique({
-        where: { id: comboId },
+      // Verificar se o combo existe e pertence ao usuário
+      const existingCombo = await prisma.combo.findFirst({
+        where: { 
+          id: comboId,
+          userId: req.user.id 
+        },
       });
 
       if (!existingCombo) {
-        return res.status(404).json({ message: 'Combo não encontrado' });
+        return res.status(404).json({ message: 'Combo não encontrado ou não autorizado' });
       }
 
-      if (existingCombo.userId !== req.user.id) {
-        return res.status(403).json({ message: 'Não autorizado' });
-      }
-
-      // Excluir o combo
+      // Excluir o combo (apenas se pertencer ao usuário)
       await prisma.combo.delete({
         where: { id: comboId },
       });

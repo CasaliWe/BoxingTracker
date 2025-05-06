@@ -1,6 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Combo } from '@/lib/constants';
 import { useAuth } from './AuthContext';
+import { getToken } from '@/auth';
+
+// Tipo do contexto para APIs
+interface ApiCombo {
+  id: number;
+  userId: number;
+  name: string;
+  base: string;
+  guarda: string;
+  etapas: string; // JSON string
+  dataModificacao: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 // Tipo do contexto
 interface ComboContextType {
@@ -13,6 +27,26 @@ interface ComboContextType {
   fetchCombos: () => Promise<void>;
 }
 
+// Função para converter API Combo para formato da interface
+const apiComboToCombo = (apiCombo: ApiCombo): Combo => {
+  let etapasObj;
+  try {
+    etapasObj = JSON.parse(typeof apiCombo.etapas === 'string' ? apiCombo.etapas : JSON.stringify(apiCombo.etapas));
+  } catch (error) {
+    console.error('Erro ao fazer parse das etapas:', error);
+    etapasObj = [];
+  }
+  
+  return {
+    id: apiCombo.id.toString(),
+    nome: apiCombo.name,
+    base: apiCombo.base,
+    guarda: apiCombo.guarda,
+    etapas: etapasObj,
+    dataModificacao: apiCombo.dataModificacao
+  };
+};
+
 // Criação do contexto
 const ComboContext = createContext<ComboContextType | undefined>(undefined);
 
@@ -21,11 +55,11 @@ export const ComboProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [combos, setCombos] = useState<Combo[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   // Função para buscar combos da API
   const fetchCombos = async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
       setCombos([]);
       return;
     }
@@ -34,9 +68,11 @@ export const ComboProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setError(null);
     
     try {
+      const token = getToken();
       const response = await fetch('/api/combos', {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include'
       });
@@ -46,7 +82,12 @@ export const ComboProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
       
       const data = await response.json();
-      setCombos(data);
+      // Converter API Combos para formato da interface
+      const formattedCombos = Array.isArray(data) 
+        ? data.map(apiComboToCombo) 
+        : [];
+        
+      setCombos(formattedCombos);
     } catch (err) {
       console.error('Erro ao buscar combos:', err);
       setError('Não foi possível carregar seus combos. Tente novamente mais tarde.');
@@ -58,33 +99,50 @@ export const ComboProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Buscar combos inicialmente e quando autenticação mudar
   useEffect(() => {
     fetchCombos();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.id]);
   
   // Função para adicionar um combo
   const adicionarCombo = async (novoCombo: Omit<Combo, 'id'>): Promise<boolean> => {
+    if (!isAuthenticated || !user) {
+      setError('Você precisa estar autenticado para adicionar um combo.');
+      return false;
+    }
+    
     setIsLoading(true);
     setError(null);
     
     try {
+      const token = getToken();
+      const apiCombo = {
+        nome: novoCombo.nome,
+        base: novoCombo.base,
+        guarda: novoCombo.guarda,
+        etapas: JSON.stringify(novoCombo.etapas),
+        dataModificacao: novoCombo.dataModificacao
+      };
+      
       const response = await fetch('/api/combos', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
-        body: JSON.stringify(novoCombo)
+        body: JSON.stringify(apiCombo)
       });
       
       if (!response.ok) {
-        throw new Error('Falha ao criar combo');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Falha ao criar combo');
       }
       
       const comboSalvo = await response.json();
-      setCombos(combos => [...combos, comboSalvo]);
+      const formattedCombo = apiComboToCombo(comboSalvo);
+      setCombos(combos => [...combos, formattedCombo]);
       return true;
     } catch (err) {
       console.error('Erro ao adicionar combo:', err);
-      setError('Não foi possível salvar o combo. Tente novamente mais tarde.');
+      setError(err instanceof Error ? err.message : 'Não foi possível salvar o combo. Tente novamente mais tarde.');
       return false;
     } finally {
       setIsLoading(false);
@@ -93,24 +151,34 @@ export const ComboProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   // Função para deletar um combo
   const deleteCombo = async (id: string): Promise<boolean> => {
+    if (!isAuthenticated || !user) {
+      setError('Você precisa estar autenticado para excluir um combo.');
+      return false;
+    }
+    
     setIsLoading(true);
     setError(null);
     
     try {
+      const token = getToken();
       const response = await fetch(`/api/combos/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         credentials: 'include'
       });
       
       if (!response.ok) {
-        throw new Error('Falha ao excluir combo');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Falha ao excluir combo');
       }
       
       setCombos(combos => combos.filter(combo => combo.id !== id));
       return true;
     } catch (err) {
       console.error('Erro ao excluir combo:', err);
-      setError('Não foi possível excluir o combo. Tente novamente mais tarde.');
+      setError(err instanceof Error ? err.message : 'Não foi possível excluir o combo. Tente novamente mais tarde.');
       return false;
     } finally {
       setIsLoading(false);
@@ -119,29 +187,46 @@ export const ComboProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   // Função para editar um combo
   const editarCombo = async (id: string, dadosAtualizados: Omit<Combo, 'id'>): Promise<boolean> => {
+    if (!isAuthenticated || !user) {
+      setError('Você precisa estar autenticado para editar um combo.');
+      return false;
+    }
+    
     setIsLoading(true);
     setError(null);
     
     try {
+      const token = getToken();
+      const apiCombo = {
+        nome: dadosAtualizados.nome,
+        base: dadosAtualizados.base,
+        guarda: dadosAtualizados.guarda,
+        etapas: JSON.stringify(dadosAtualizados.etapas),
+        dataModificacao: dadosAtualizados.dataModificacao
+      };
+      
       const response = await fetch(`/api/combos/${id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         credentials: 'include',
-        body: JSON.stringify(dadosAtualizados)
+        body: JSON.stringify(apiCombo)
       });
       
       if (!response.ok) {
-        throw new Error('Falha ao atualizar combo');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Falha ao atualizar combo');
       }
       
       const comboAtualizado = await response.json();
-      setCombos(combos => combos.map(combo => combo.id === id ? comboAtualizado : combo));
+      const formattedCombo = apiComboToCombo(comboAtualizado);
+      setCombos(combos => combos.map(combo => combo.id === id ? formattedCombo : combo));
       return true;
     } catch (err) {
       console.error('Erro ao editar combo:', err);
-      setError('Não foi possível atualizar o combo. Tente novamente mais tarde.');
+      setError(err instanceof Error ? err.message : 'Não foi possível atualizar o combo. Tente novamente mais tarde.');
       return false;
     } finally {
       setIsLoading(false);

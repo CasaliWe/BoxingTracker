@@ -11,8 +11,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className, onClose }) => {
   const [location, setLocation] = useLocation();
   const { user, logout } = useAuth();
 
+  // Verifique se estamos na página de perfil ou biblioteca para ajustar a altura
+  const isProfileOrLibrary = location === '/perfil' || location === '/biblioteca';
+
   return (
-    <aside className={`flex flex-col w-64 bg-card border-r border-dark-600 ${className || ''}`}>
+    <aside className={`flex flex-col w-64 bg-card border-r border-dark-600 ${isProfileOrLibrary ? 'h-full min-h-screen' : ''} ${className || ''}`}>
       {/* Cabeçalho */}
       <div className="flex items-center justify-between h-16 border-b border-dark-600 px-4">
         <h1 className="text-xl font-bold text-white flex items-center gap-2">
@@ -29,7 +32,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className, onClose }) => {
       {/* Informações do usuário */}
       <div className="p-4 border-b border-dark-600 flex items-center space-x-3">
         <div className="w-10 h-10 rounded-full bg-base-dark/50 flex items-center justify-center flex-shrink-0">
-          <i className="ri-user-line text-lg text-white"></i>
+          {user?.profileImage ? (
+            <img src={user.profileImage} alt="Perfil" className="w-full h-full object-cover rounded-full" />
+          ) : (
+            <i className="ri-user-line text-lg text-white"></i>
+          )}
         </div>
         <div className="overflow-hidden">
           <p className="font-medium text-white truncate">{user?.name}</p>

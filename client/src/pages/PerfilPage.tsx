@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import MobileHeader from '@/components/layout/MobileHeader';
 import { useMobile } from '@/hooks/use-mobile';
@@ -11,27 +11,76 @@ const PerfilPage = () => {
   const { isMobile } = useMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [senhaModalOpen, setSenhaModalOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile, deleteAccount } = useAuth();
+  const [, setLocation] = useLocation();
   
   // Estados para os campos do perfil
   const [name, setName] = useState(user?.name || '');
-  const [phone, setPhone] = useState('');
-  const [age, setAge] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [weight, setWeight] = useState('');
-  const [height, setHeight] = useState('');
-  const [gym, setGym] = useState('');
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [age, setAge] = useState(user?.age ? String(user.age) : '');
+  const [city, setCity] = useState(user?.city || '');
+  const [state, setState] = useState(user?.state || '');
+  const [weight, setWeight] = useState(user?.weight ? String(user.weight) : '');
+  const [height, setHeight] = useState(user?.height ? String(user.height) : '');
+  const [gym, setGym] = useState(user?.gym || '');
+  const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
-  const handleToggleEdit = () => {
+  // Atualizar os campos quando o usuário mudar
+  useEffect(() => {
+    if (user) {
+      setName(user.name || '');
+      setPhone(user.phone || '');
+      setAge(user.age ? String(user.age) : '');
+      setCity(user.city || '');
+      setState(user.state || '');
+      setWeight(user.weight ? String(user.weight) : '');
+      setHeight(user.height ? String(user.height) : '');
+      setGym(user.gym || '');
+      setProfileImage(user.profileImage || null);
+    }
+  }, [user]);
+  
+  const handleToggleEdit = async () => {
     if (isEditing) {
       // Salvar as alterações
-      toast({
-        title: "Perfil atualizado",
-        description: "Suas informações foram atualizadas com sucesso."
-      });
+      setIsLoading(true);
+      try {
+        const success = await updateProfile({
+          name,
+          phone,
+          age: age ? parseInt(age) : undefined,
+          city,
+          state,
+          weight: weight ? parseFloat(weight) : undefined,
+          height: height ? parseFloat(height) : undefined,
+          gym,
+          profileImage: profileImage || undefined
+        });
+        
+        if (success) {
+          toast({
+            title: "Perfil atualizado",
+            description: "Suas informações foram atualizadas com sucesso."
+          });
+        } else {
+          toast({
+            title: "Erro ao atualizar",
+            description: "Não foi possível atualizar o perfil. Tente novamente.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao atualizar perfil:', error);
+        toast({
+          title: "Erro ao atualizar",
+          description: "Ocorreu um erro ao atualizar o perfil. Tente novamente.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
     
     setIsEditing(!isEditing);
@@ -45,17 +94,41 @@ const PerfilPage = () => {
     setSenhaModalOpen(true);
   };
   
-  const handleDeleteAccount = () => {
-    if (window.confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.')) {
-      toast({
-        title: "Conta excluída",
-        description: "Sua conta foi excluída com sucesso."
-      });
-      
-      // Redirecionar para a página de login
-      const [_, setLocation] = useLocation();
-      logout();
-      setLocation('/login');
+  const handleDeleteAccount = async () => {
+    if (window.confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita e todos os seus dados serão removidos permanentemente.')) {
+      setIsLoading(true);
+      try {
+        const success = await deleteAccount();
+        
+        if (success) {
+          toast({
+            title: "Conta excluída",
+            description: "Sua conta foi excluída com sucesso."
+          });
+          
+          // Já não é mais necessário fazer logout explicitamente, pois o deleteAccount já o faz,
+          // mas por segurança adicional
+          logout();
+          
+          // Redirecionar para a página de login
+          setLocation('/login');
+        } else {
+          toast({
+            title: "Erro ao excluir conta",
+            description: "Não foi possível excluir sua conta. Tente novamente.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao excluir conta:', error);
+        toast({
+          title: "Erro ao excluir conta",
+          description: "Ocorreu um erro ao excluir sua conta. Tente novamente.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
   

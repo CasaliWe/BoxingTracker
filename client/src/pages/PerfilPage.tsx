@@ -230,10 +230,17 @@ const PerfilPage = () => {
               {/* Cabeçalho do perfil */}
               <div className="p-6 border-b border-dark-600 flex flex-col md:flex-row items-center gap-6">
                 <div className="w-24 h-24 rounded-full bg-base-dark/30 flex items-center justify-center overflow-hidden">
-                  {profileImage ? (
-                    // Se a imagem começar com "data:", é um preview local. Caso contrário, é um URL do servidor.
+                  {profileImage && profileImage.startsWith('data:') ? (
+                    // Se for um preview local de uma nova imagem
                     <img 
-                      src={profileImage.startsWith('data:') ? profileImage : user?.profileImage?.startsWith('/') ? user.profileImage : `/uploads/profile/${user?.profileImage}`} 
+                      src={profileImage} 
+                      alt="Foto de perfil (preview)" 
+                      className="w-full h-full object-cover" 
+                    />
+                  ) : user?.profileImageUrl ? (
+                    // Se tiver uma URL de imagem do servidor
+                    <img 
+                      src={user.profileImageUrl} 
                       alt="Foto de perfil" 
                       className="w-full h-full object-cover" 
                     />

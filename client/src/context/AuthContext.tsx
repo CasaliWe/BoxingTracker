@@ -14,6 +14,7 @@ interface User {
   height?: number;
   gym?: string;
   profileImage?: string;
+  profileImageUrl?: string; // URL completa da imagem para exibição
   createdAt: string;
   updatedAt: string;
   token?: string;

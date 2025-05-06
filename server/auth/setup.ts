@@ -209,6 +209,7 @@ export function setupAuth(app: Express) {
       // Retornar dados do usuário e o token de autenticação
       const userData = {
         ...user,
+        profileImageUrl: getProfileImageUrl(user.profileImage),
         token
       };
       
@@ -269,6 +270,7 @@ export function setupAuth(app: Express) {
         height: user.height,
         gym: user.gym,
         profileImage: user.profileImage,
+        profileImageUrl: getProfileImageUrl(user.profileImage),
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
         token: token // Incluir o token JWT na resposta

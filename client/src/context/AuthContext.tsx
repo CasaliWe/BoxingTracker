@@ -143,30 +143,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Função para atualizar perfil
   const updateProfile = async (userData: Partial<User>): Promise<boolean> => {
     try {
+      const token = getToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      console.log('Enviando dados para atualização de perfil:', userData);
+      
       const res = await fetch('/api/user', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
         body: JSON.stringify(userData),
         credentials: 'include'
       });
       
       if (!res.ok) {
+        console.error('Erro ao atualizar perfil - status:', res.status);
         throw new Error('Falha ao atualizar perfil');
       }
       
       const updatedUser = await res.json();
+      console.log('Resposta do servidor após atualização de perfil:', updatedUser);
       
       // Atualizar dados no localStorage
       const currentUser = getUser();
       if (currentUser) {
         const mergedUser = { ...currentUser, ...updatedUser };
+        if (token && !mergedUser.token) {
+          mergedUser.token = token; // Manter o token atual
+        }
         saveUser(mergedUser);
       }
       
-      // Atualizar estado
-      setUser(prev => prev ? {...updatedUser} : null);
+      // Atualizar estado - garantir que preservamos os dados existentes
+      setUser(prev => prev ? {...prev, ...updatedUser} : updatedUser);
       return true;
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
@@ -200,12 +214,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Função para excluir conta
   const deleteAccount = async (): Promise<boolean> => {
     try {
+      const token = getToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      console.log('Solicitando exclusão de conta...');
+      
       const res = await fetch('/api/user', {
         method: 'DELETE',
+        headers: headers,
         credentials: 'include'
       });
       
       if (!res.ok) {
+        console.error('Erro ao excluir conta - status:', res.status);
         throw new Error('Falha ao excluir conta');
       }
       
@@ -214,6 +241,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Atualizar estado
       setUser(null);
+      console.log('Conta excluída com sucesso');
       return true;
     } catch (error) {
       console.error('Erro ao excluir conta:', error);

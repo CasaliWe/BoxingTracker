@@ -32,7 +32,12 @@ const LoginPage = () => {
           title: "Login realizado com sucesso!",
           description: "Bem-vindo de volta ao VibeBoxing."
         });
-        setLocation('/');
+        
+        // Usar setTimeout para garantir que o redirecionamento ocorra após o estado ser atualizado
+        setTimeout(() => {
+          console.log('Redirecionando para dashboard...');
+          setLocation('/');
+        }, 300);
       } else {
         toast({
           title: "Falha no login",

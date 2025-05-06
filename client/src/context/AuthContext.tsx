@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { apiRequest } from '@/lib/queryClient';
-import { QueryClient } from '@tanstack/react-query';
 
 interface User {
   id: number;
@@ -40,16 +38,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log('Verificando autenticação...');
         const res = await fetch('/api/user', {
           credentials: 'include'
         });
         
         if (res.ok) {
           const userData = await res.json();
+          console.log('Usuário autenticado:', userData);
           setUser(userData);
+        } else {
+          console.log('Usuário não autenticado');
+          setUser(null);
         }
       } catch (error) {
         console.error('Erro ao verificar autenticação:', error);
+        setUser(null);
       }
     };
     
@@ -59,9 +63,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Função de login com email/senha
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const res = await apiRequest('POST', '/api/login', { email, password });
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'  // Importante: inclui cookies na requisição
+      });
+      
+      if (!res.ok) {
+        throw new Error('Falha no login');
+      }
+      
       const userData = await res.json();
       setUser(userData);
+      
+      // Verificar se recebemos os dados do usuário corretamente
+      console.log('Login bem-sucedido, dados do usuário:', userData);
+      
       return true;
     } catch (error) {
       console.error('Erro ao fazer login:', error);
@@ -72,9 +92,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Função de registro
   const register = async (name: string, email: string, password: string): Promise<boolean> => {
     try {
-      const res = await apiRequest('POST', '/api/register', { name, email, password });
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+        credentials: 'include'
+      });
+      
+      if (!res.ok) {
+        throw new Error('Falha no registro');
+      }
+      
       const userData = await res.json();
       setUser(userData);
+      console.log('Registro bem-sucedido, dados do usuário:', userData);
       return true;
     } catch (error) {
       console.error('Erro ao registrar:', error);
@@ -85,7 +118,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Função de logout
   const logout = async () => {
     try {
-      await apiRequest('POST', '/api/logout');
+      await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
       setUser(null);
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
@@ -95,7 +131,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Função para atualizar perfil
   const updateProfile = async (userData: Partial<User>): Promise<boolean> => {
     try {
-      const res = await apiRequest('PUT', '/api/user', userData);
+      const res = await fetch('/api/user', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+        credentials: 'include'
+      });
+      
+      if (!res.ok) {
+        throw new Error('Falha ao atualizar perfil');
+      }
+      
       const updatedUser = await res.json();
       setUser(updatedUser);
       return true;
@@ -108,7 +156,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Função para alterar senha
   const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
     try {
-      await apiRequest('POST', '/api/change-password', { currentPassword, newPassword });
+      const res = await fetch('/api/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+        credentials: 'include'
+      });
+      
+      if (!res.ok) {
+        throw new Error('Falha ao alterar senha');
+      }
+      
       return true;
     } catch (error) {
       console.error('Erro ao alterar senha:', error);
@@ -119,7 +179,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Função para excluir conta
   const deleteAccount = async (): Promise<boolean> => {
     try {
-      await apiRequest('DELETE', '/api/user');
+      const res = await fetch('/api/user', {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (!res.ok) {
+        throw new Error('Falha ao excluir conta');
+      }
+      
       setUser(null);
       return true;
     } catch (error) {

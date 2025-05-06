@@ -44,7 +44,7 @@ const ComboCreationModal: React.FC<ComboCreationModalProps> = ({ onClose }) => {
   const nextButtonText = currentStep === 3 ? 'Finalizar' : 'Próximo';
   
   // Manipuladores de eventos
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (currentStep === 1 && !selectedBase) {
       toast({
         title: "Selecione uma base",
@@ -75,22 +75,39 @@ const ComboCreationModal: React.FC<ComboCreationModalProps> = ({ onClose }) => {
         return;
       }
       
-      // Criar o combo
+      // Criar o combo para enviar à API
       const novoCombo = {
-        id: Date.now().toString(),
         nome: `Combo ${selectedBase === 'destro' ? 'Destro' : 'Canhoto'} ${new Date().toLocaleDateString('pt-BR')}`,
         base: selectedBase,
         guarda: selectedGuarda,
-        etapas: steps,
+        etapas: JSON.stringify(steps), // Convertendo para JSON string conforme esperado pela API
         dataModificacao: new Date().toISOString()
       };
       
-      adicionarCombo(novoCombo);
-      toast({
-        title: "Combo criado com sucesso!",
-        description: "Seu novo combo foi adicionado à lista.",
-      });
-      onClose();
+      try {
+        const success = await adicionarCombo(novoCombo);
+        
+        if (success) {
+          toast({
+            title: "Combo criado com sucesso!",
+            description: "Seu novo combo foi adicionado à lista.",
+          });
+          onClose();
+        } else {
+          toast({
+            title: "Erro ao criar combo",
+            description: "Não foi possível salvar o combo. Tente novamente.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao criar combo:', error);
+        toast({
+          title: "Erro ao criar combo",
+          description: "Ocorreu um erro ao salvar o combo. Tente novamente.",
+          variant: "destructive"
+        });
+      }
       return;
     }
     

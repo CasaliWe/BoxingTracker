@@ -75,7 +75,7 @@ export function setupCombosRoutes(app: Express) {
           name: nome,
           base,
           guarda,
-          etapas: JSON.stringify(etapas),
+          etapas: typeof etapas === 'string' ? etapas : JSON.stringify(etapas),
           dataModificacao: new Date(),
         },
       });
@@ -119,7 +119,7 @@ export function setupCombosRoutes(app: Express) {
           name: nome || undefined,
           base: base || undefined,
           guarda: guarda || undefined,
-          etapas: etapas ? JSON.stringify(etapas) : undefined,
+          etapas: etapas ? (typeof etapas === 'string' ? etapas : JSON.stringify(etapas)) : undefined,
           dataModificacao: new Date(),
         },
       });

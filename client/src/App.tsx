@@ -43,7 +43,7 @@ const ProtectedRoute = ({ component: Component }: { component: React.ComponentTy
     const timer = setTimeout(() => {
       setIsLoading(false);
       checkAuth();
-    }, 200);
+    }, 500);
     
     return () => clearTimeout(timer);
   }, [isAuthenticated, setLocation]);
@@ -76,7 +76,7 @@ const PublicOnlyRoute = ({ component: Component }: { component: React.ComponentT
     const timer = setTimeout(() => {
       setIsLoading(false);
       checkAuth();
-    }, 200);
+    }, 500);
     
     return () => clearTimeout(timer);
   }, [isAuthenticated, setLocation]);

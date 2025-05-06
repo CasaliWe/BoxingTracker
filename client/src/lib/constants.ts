@@ -1,5 +1,5 @@
 // Tipos de golpes
-export type CategoriaGolpe = 'ATAQUE' | 'ESQUIVA' | 'BLOQUEIO' | 'FOOTWORK' | 'CLINCH' | 'BASE' | 'GUARDA';
+export type CategoriaGolpe = 'ATAQUE' | 'ESQUIVA' | 'BLOQUEIO' | 'FOOTWORK' | 'CLINCH';
 
 // Interface para golpes
 export interface Golpe {

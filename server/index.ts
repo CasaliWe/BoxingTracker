@@ -1,7 +1,19 @@
+// Carregar variáveis de ambiente do arquivo .env
+import 'dotenv/config';
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
+
+// Log para verificar as variáveis de email
+console.log('==== Variáveis de ambiente carregadas ====');
+console.log('EMAIL_HOST:', process.env.EMAIL_HOST);
+console.log('EMAIL_PORT:', process.env.EMAIL_PORT);
+console.log('EMAIL_USER:', process.env.EMAIL_USER ? 'configurado' : 'não configurado');
+console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? 'configurado' : 'não configurado');
+console.log('EMAIL_FROM:', process.env.EMAIL_FROM);
+console.log('=====================================');
 
 const app = express();
 app.use(express.json());
@@ -63,7 +75,7 @@ app.use((req, res, next) => {
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = 5000;
+  const port = process.env.PORT;
   server.listen({
     port,
     host: "0.0.0.0",

@@ -60,11 +60,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const userData = await res.json();
       
-      console.log('Resposta do servidor login:', userData);
-      
       // Salvar token e dados do usuário no localStorage para persistência
       if (userData.token) {
-        console.log('Salvando token no localStorage:', userData.token);
         saveToken(userData.token);
       } else {
         console.warn('Token não recebido do servidor');
@@ -76,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(userData);
       
       // Verificar se recebemos os dados do usuário corretamente
-      console.log('Login bem-sucedido, dados do usuário:', userData);
+      console.log('Login bem-sucedido');
       
       return true;
     } catch (error) {

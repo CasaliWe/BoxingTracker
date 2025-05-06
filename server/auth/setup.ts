@@ -2,6 +2,7 @@ import { Express, Request, Response, NextFunction } from 'express';
 import session from 'express-session';
 import prisma from '../../prisma/prisma-client';
 import { comparePasswords, hashPassword } from './utils';
+import memorystore from 'memorystore';
 
 // Definir o usuário para Express Request
 declare global {
@@ -20,9 +21,14 @@ declare module 'express-session' {
 }
 
 export function setupAuth(app: Express) {
-  // Configurar sessão
+  // Configurar sessão com MemoryStore
+  const MemoryStore = memorystore(session);
+  
   app.use(
     session({
+      store: new MemoryStore({
+        checkPeriod: 86400000 // limpar sessões expiradas a cada 24h
+      }),
       secret: process.env.SESSION_SECRET || 'vibeboxing-secret-key',
       resave: false,
       saveUninitialized: false,

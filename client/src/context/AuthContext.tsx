@@ -26,6 +26,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updateProfile: (userData: Partial<User>) => Promise<boolean>;
+  uploadProfileImage: (file: File) => Promise<boolean>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   deleteAccount: () => Promise<boolean>;
 }
@@ -188,6 +189,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
   
+  // Função para upload de imagem de perfil
+  const uploadProfileImage = async (file: File): Promise<boolean> => {
+    try {
+      const token = getToken();
+      const headers: Record<string, string> = {};
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      console.log('Iniciando upload de imagem:', file.name);
+      
+      // Criar um FormData para enviar o arquivo
+      const formData = new FormData();
+      formData.append('profileImage', file);
+      
+      const res = await fetch('/api/user/profile-image', {
+        method: 'POST',
+        headers: headers,
+        body: formData,
+        credentials: 'include'
+      });
+      
+      if (!res.ok) {
+        console.error('Erro ao fazer upload de imagem - status:', res.status);
+        throw new Error('Falha ao fazer upload de imagem');
+      }
+      
+      const updatedUser = await res.json();
+      console.log('Resposta do servidor após upload de imagem:', updatedUser);
+      
+      // Atualizar dados no localStorage
+      const currentUser = getUser();
+      if (currentUser) {
+        const mergedUser = { ...currentUser, ...updatedUser };
+        if (token && !mergedUser.token) {
+          mergedUser.token = token; // Manter o token atual
+        }
+        saveUser(mergedUser);
+      }
+      
+      // Atualizar estado - garantir que preservamos os dados existentes
+      setUser(prev => prev ? {...prev, ...updatedUser} : updatedUser);
+      return true;
+    } catch (error) {
+      console.error('Erro ao fazer upload de imagem:', error);
+      return false;
+    }
+  };
+  
   // Função para alterar senha
   const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
     try {
@@ -336,6 +387,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       register, 
       logout,
       updateProfile,
+      uploadProfileImage,
       changePassword,
       deleteAccount 
     }}>

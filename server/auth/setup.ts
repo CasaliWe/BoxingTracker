@@ -317,7 +317,6 @@ export function setupAuth(app: Express) {
         weight,
         height,
         gym,
-        profileImage,
       } = req.body;
 
       const updatedUser = await prisma.user.update({
@@ -331,7 +330,6 @@ export function setupAuth(app: Express) {
           weight: weight ? parseFloat(weight) : undefined,
           height: height ? parseFloat(height) : undefined,
           gym: gym || undefined,
-          profileImage: profileImage || undefined,
         },
         select: {
           id: true,
@@ -354,6 +352,67 @@ export function setupAuth(app: Express) {
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
       res.status(500).json({ message: 'Erro ao atualizar perfil' });
+    }
+  });
+  
+  // Rota para upload de imagem de perfil
+  app.post('/api/user/profile-image', profileUpload.single('profileImage'), async (req: Request, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Não autenticado' });
+    }
+    
+    try {
+      // Verificar se o arquivo foi enviado
+      if (!req.file) {
+        return res.status(400).json({ message: 'Nenhuma imagem enviada' });
+      }
+      
+      // Obter o usuário atual para verificar se já possui imagem
+      const currentUser = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        select: { profileImage: true }
+      });
+      
+      // Excluir a imagem antiga se existir
+      if (currentUser?.profileImage) {
+        await deleteProfileImage(currentUser.profileImage);
+      }
+      
+      // Atualizar o perfil com o novo nome do arquivo
+      const updatedUser = await prisma.user.update({
+        where: { id: req.user.id },
+        data: {
+          profileImage: req.file.filename
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          phone: true,
+          age: true,
+          city: true,
+          state: true,
+          weight: true,
+          height: true,
+          gym: true,
+          profileImage: true,
+          createdAt: true,
+          updatedAt: true,
+        }
+      });
+      
+      // Adicionar token ao usuário para consistência com outras rotas
+      const token = generateToken(updatedUser.id);
+      const userData = {
+        ...updatedUser,
+        token,
+        profileImageUrl: getProfileImageUrl(updatedUser.profileImage)
+      };
+      
+      res.status(200).json(userData);
+    } catch (error) {
+      console.error('Erro ao fazer upload de imagem:', error);
+      res.status(500).json({ message: 'Erro ao processar upload de imagem' });
     }
   });
 
@@ -410,9 +469,21 @@ export function setupAuth(app: Express) {
     }
 
     try {
+      // Buscar o usuário para obter a imagem de perfil antes de excluir
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        select: { profileImage: true }
+      });
+      
+      // Excluir o usuário
       await prisma.user.delete({
         where: { id: req.user.id },
       });
+      
+      // Excluir a imagem de perfil se existir
+      if (user?.profileImage) {
+        await deleteProfileImage(user.profileImage);
+      }
 
       req.session.destroy((err) => {
         if (err) {

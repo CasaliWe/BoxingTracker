@@ -11,7 +11,7 @@ const PerfilPage = () => {
   const { isMobile } = useMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [senhaModalOpen, setSenhaModalOpen] = useState(false);
-  const { user, logout, updateProfile, deleteAccount } = useAuth();
+  const { user, logout, updateProfile, uploadProfileImage, deleteAccount } = useAuth();
   const [, setLocation] = useLocation();
   
   // Estados para os campos do perfil
@@ -55,8 +55,8 @@ const PerfilPage = () => {
           state,
           weight: weight ? parseFloat(weight) : undefined,
           height: height ? parseFloat(height) : undefined,
-          gym,
-          profileImage: profileImage || undefined
+          gym
+          // Remova o campo profileImage aqui, pois será gerenciado separadamente
         });
         
         if (success) {
@@ -132,10 +132,11 @@ const PerfilPage = () => {
     }
   };
   
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
+    // Exibir preview local para feedback imediato ao usuário
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
@@ -143,6 +144,34 @@ const PerfilPage = () => {
       }
     };
     reader.readAsDataURL(file);
+    
+    // Fazer upload da imagem para o servidor
+    setIsLoading(true);
+    try {
+      const success = await uploadProfileImage(file);
+      
+      if (success) {
+        toast({
+          title: "Imagem atualizada",
+          description: "Sua foto de perfil foi atualizada com sucesso."
+        });
+      } else {
+        toast({
+          title: "Erro ao fazer upload",
+          description: "Não foi possível fazer o upload da imagem. Tente novamente.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao fazer upload de imagem:', error);
+      toast({
+        title: "Erro ao fazer upload",
+        description: "Ocorreu um erro ao fazer o upload da imagem. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (

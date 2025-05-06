@@ -6,6 +6,7 @@ import { apiRequest } from '@/lib/queryClient';
 enum FormStage {
   INPUT_EMAIL,
   SUCCESS,
+  SUCCESS_WITH_PASSWORD,
   ERROR
 }
 
@@ -14,6 +15,7 @@ const RecuperarSenhaPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [stage, setStage] = useState<FormStage>(FormStage.INPUT_EMAIL);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [tempPassword, setTempPassword] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +39,15 @@ const RecuperarSenhaPage = () => {
       );
       
       if (response.ok) {
-        setStage(FormStage.SUCCESS);
+        const responseData = await response.json();
+        
+        // Verificar se temos uma senha temporária (modo de desenvolvimento)
+        if (responseData.tempPassword) {
+          setTempPassword(responseData.tempPassword);
+          setStage(FormStage.SUCCESS_WITH_PASSWORD);
+        } else {
+          setStage(FormStage.SUCCESS);
+        }
       } else {
         const data = await response.json();
         setErrorMessage(data.message || "Ocorreu um erro ao solicitar a recuperação de senha.");
@@ -67,6 +77,7 @@ const RecuperarSenhaPage = () => {
           <h1 className="text-2xl font-bold text-white mb-6 text-center">
             {stage === FormStage.INPUT_EMAIL && "Recuperar Senha"}
             {stage === FormStage.SUCCESS && "Email Enviado"}
+            {stage === FormStage.SUCCESS_WITH_PASSWORD && "Senha Temporária"}
             {stage === FormStage.ERROR && "Ocorreu um Erro"}
           </h1>
           

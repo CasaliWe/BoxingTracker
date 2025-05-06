@@ -354,17 +354,36 @@ export function setupAuth(app: Express) {
         return res.status(500).json({ message: 'Erro ao atualizar senha. Por favor, tente novamente mais tarde.' });
       }
       
-      // Enviar email com a nova senha
+      // Tenta enviar email, mas com fallback para mostrar a senha diretamente em ambiente de desenvolvimento
       try {
+        console.log('Tentando enviar email para:', email);
         const emailSent = await sendPasswordResetEmail(email, newPassword);
         
         if (!emailSent) {
-          // Se falhar ao enviar o email, revertemos a senha para evitar inconsistências
-          return res.status(500).json({ message: 'Erro ao enviar email de recuperação. Por favor, tente novamente mais tarde.' });
+          console.log('Falha ao enviar email, mas retornaremos a senha em modo de desenvolvimento');
+          
+          // Em ambiente de desenvolvimento, retornamos a senha no response
+          if (process.env.NODE_ENV !== 'production') {
+            return res.status(200).json({ 
+              message: 'Modo de desenvolvimento: Não foi possível enviar o email. Use a senha abaixo para login.',
+              tempPassword: newPassword 
+            });
+          } else {
+            return res.status(500).json({ message: 'Erro ao enviar email de recuperação. Por favor, tente novamente mais tarde.' });
+          }
         }
       } catch (emailError) {
         console.error('Erro ao enviar email:', emailError);
-        return res.status(500).json({ message: 'Serviço de email temporariamente indisponível. Por favor, tente novamente mais tarde.' });
+        
+        // Em ambiente de desenvolvimento, retornamos a senha no response
+        if (process.env.NODE_ENV !== 'production') {
+          return res.status(200).json({ 
+            message: 'Modo de desenvolvimento: Não foi possível enviar o email. Use a senha abaixo para login.',
+            tempPassword: newPassword 
+          });
+        } else {
+          return res.status(500).json({ message: 'Serviço de email temporariamente indisponível. Por favor, tente novamente mais tarde.' });
+        }
       }
       
       res.status(200).json({ message: 'Email de recuperação enviado com sucesso. Verifique sua caixa de entrada.' });

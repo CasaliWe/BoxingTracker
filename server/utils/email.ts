@@ -1,5 +1,13 @@
 import nodemailer from 'nodemailer';
 
+// Logs para debug
+console.log('Configuração de email:');
+console.log('HOST:', process.env.EMAIL_HOST);
+console.log('PORT:', process.env.EMAIL_PORT);
+console.log('USER:', process.env.EMAIL_USER ? '***configurado***' : 'não configurado');
+console.log('PASS:', process.env.EMAIL_PASS ? '***configurado***' : 'não configurado');
+console.log('FROM:', process.env.EMAIL_FROM);
+
 // Configurar o transportador de e-mail
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
@@ -9,6 +17,9 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  tls: {
+    rejectUnauthorized: false // Aceitar certificados autoassinados
+  }
 });
 
 // Template HTML para a recuperação de senha
@@ -89,7 +100,7 @@ const passwordResetTemplate = (password: string) => `
       <p>Por razões de segurança, recomendamos que você altere esta senha após o login.</p>
       <p>Para alterar sua senha, acesse seu perfil no VibeBoxing e clique em "Alterar minha senha".</p>
       <p style="text-align: center;">
-        <a href="${process.env.APP_URL || 'https://vibeboxing.replit.app'}/login" class="button">Acessar VibeBoxing</a>
+        <a href="https://d66770ed-b8f5-4774-868b-8ff36bceb5cc-00-11ocuxwbwgv1y.picard.replit.dev/login" class="button">Acessar VibeBoxing</a>
       </p>
     </div>
     <div class="footer">

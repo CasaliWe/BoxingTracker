@@ -9,6 +9,7 @@ import BibliotecaPage from "@/pages/BibliotecaPage";
 import PerfilPage from "@/pages/PerfilPage";
 import LoginPage from "@/pages/LoginPage";
 import RegistroPage from "@/pages/RegistroPage";
+import RecuperarSenhaPage from "@/pages/RecuperarSenhaPage";
 import { ComboProvider } from "@/context/ComboContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
@@ -32,6 +33,7 @@ function Router() {
     <Switch>
       <Route path="/login" component={LoginPage} />
       <Route path="/registro" component={RegistroPage} />
+      <Route path="/recuperar-senha" component={RecuperarSenhaPage} />
       <Route path="/">
         {() => <ProtectedRoute component={DashboardPage} />}
       </Route>

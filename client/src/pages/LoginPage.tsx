@@ -81,7 +81,7 @@ const LoginPage = () => {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <label htmlFor="password" className="block text-sm text-muted-foreground">Senha</label>
-                <a href="#" className="text-xs text-base-base hover:underline">Esqueceu a senha?</a>
+                <Link href="/recuperar-senha" className="text-xs text-base-base hover:underline">Esqueceu a senha?</Link>
               </div>
               <input 
                 type="password" 

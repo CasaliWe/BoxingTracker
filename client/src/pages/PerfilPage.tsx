@@ -1,14 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import MobileHeader from '@/components/layout/MobileHeader';
 import { useMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
+import AlterarSenhaModal from '@/components/perfil/AlterarSenhaModal';
 
 const PerfilPage = () => {
   const { isMobile } = useMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [senhaModalOpen, setSenhaModalOpen] = useState(false);
   const { user, logout } = useAuth();
   
   // Estados para os campos do perfil
